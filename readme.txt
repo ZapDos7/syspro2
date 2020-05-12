@@ -20,3 +20,5 @@ Notes:
 Conclusions:
 
 Sources:
+Disease Names: https://www.cdc.gov/diseasesconditions/az/
+Country Names: https://history.state.gov/countries/all (trimmed)

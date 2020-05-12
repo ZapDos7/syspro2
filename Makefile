@@ -1,6 +1,6 @@
 CC=g++ -std=c++11
 CFLAGS=-c -Wpedantic -Ofast -Wall
-LDFLAGS=
+SCRIPT = create_infiles.sh
 SOURCES=main.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=
@@ -23,3 +23,6 @@ clean:
 
 val:
 	$(VAL) ./$(EXECUTABLE) $(FILE) $(ARGS)
+
+script:
+	./$(SCRIPT) diseasesFile.txt countriesFile.txt ../folder 5 10
