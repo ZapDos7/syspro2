@@ -16,9 +16,10 @@ Use:
 - execute "$make clean" to clean the working folder.
 
 Notes:
+- The bash script can create records with the second field as exit without having a correpsonding entry record, which is then handled properly by the rest of the program, as instructed.
 
 Conclusions:
 
 Sources:
-Disease Names: https://www.cdc.gov/diseasesconditions/az/
+Disease Names: https://www.cdc.gov/diseasesconditions/az/ (selection)
 Country Names: https://history.state.gov/countries/all (trimmed)

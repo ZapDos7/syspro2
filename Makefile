@@ -25,4 +25,4 @@ val:
 	$(VAL) ./$(EXECUTABLE) $(FILE) $(ARGS)
 
 script:
-	./$(SCRIPT) diseasesFile.txt countriesFile.txt ../folder 5 10
+	./$(SCRIPT) diseasesFile.txt countriesFileSmall.txt ../folder 5 10
