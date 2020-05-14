@@ -4,12 +4,12 @@
 
 random-string()
 {
-    cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w ${1:-32} | head -n 1
+    cat /dev/urandom | tr -dc 'a-z0-9' | fold -w ${1:-32} | head -n 1
 }
 
 random-name()
 {
-    cat /dev/urandom | tr -dc 'a-zA-Z' | fold -w ${1:-32} | head -n 1
+    cat /dev/urandom | tr -dc 'a-z' | fold -w ${1:-32} | head -n 1
 }
 
 if [ $# -ne 5 ];
@@ -36,6 +36,8 @@ while IFS= read -r line
 do
     #echo "$line" #gia kathe grammi ftiakse ena folder
     mkdir -p "$3/$line" #make subdirs for each country
+    #den xreiazetai na elegxoume an uparxei to directory giati to country file den exei diplotupa onomata xwrwn
+    #an thelame, elegxoume me to if [[ -d $3/$line ]]; then ...
     #ftiakse $4 files edw mesa
     while [ $counter -gt 0 ] #5 4 3 2 1
     do
@@ -47,7 +49,14 @@ do
         do
             year=$(( ( RANDOM % 2050 + 1 ) ))
         done #end while gia na exoume xronies > 1900 just so stuff seem to make sense
-        touch "$3/$line/$day-$month-$year" #legontai DD-MM-YYYY
+        FILE=$3/$line/$day-$month-$year
+        if [[ -f "$FILE" ]]; then
+            echo "$FILE exists"
+            #in order to skip the while, we init counter2 as 0 so it never runs
+            counter2=0
+        else
+            touch "$3/$line/$day-$month-$year" #legontai DD-MM-YYYY
+        fi
         while [ $counter2 -gt 0 ] #10 9 8 7 ...
         do
             #tuxaio string me arithmous kai noumera - 5 xaraktires

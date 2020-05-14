@@ -1,9 +1,11 @@
 CC=g++ -std=c++11
 CFLAGS=-c -Wpedantic -Ofast -Wall
 SCRIPT = create_infiles.sh
-SOURCES=main.cpp
+SOURCES=main.cpp date.cpp record.cpp ht.cpp aht.cpp bb.cpp tree.cpp heap.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
-EXECUTABLE=
+EXECUTABLE=diseaseAggregator
+ARGS= -w 3 -b 64 -i ../folder
+#-w -> number of workers, -b -> buffersize for pipes, -i -> input directory
 VAL=valgrind --leak-check=full
 
 
