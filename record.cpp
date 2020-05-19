@@ -12,11 +12,11 @@ record::record(string line) //thewrw oti dineis sxetika swsto record kai xeirizo
     const char delim[5] = " \r\n\t";//\0
     pch = strtok(cstr, delim);
     short unsigned int counter = 0;
-    char* parts[7];
+    char* parts[8]; //+1 gia age!
     while (pch != NULL)
     {
         parts[counter] = pch;
-        if (counter==7) //ama dw8ei o,ti na nai gia record, yeet -> this saves us from a seg fault an dw8ei dld record swsta kai meta akura strings
+        if (counter==8) //ama dw8ei o,ti na nai gia record, yeet -> this saves us from a seg fault an dw8ei dld record swsta kai meta akura strings
         {
             pch = strtok(NULL, delim);
             break;            
@@ -24,7 +24,7 @@ record::record(string line) //thewrw oti dineis sxetika swsto record kai xeirizo
         counter++;
         pch = strtok(NULL, delim);
     }
-    for (unsigned int i = 0; i < 7; i++)
+    for (unsigned int i = 0; i < 8; i++)
     {
         string tmp(parts[i]);
         if (i == 0) id = tmp;
@@ -32,14 +32,14 @@ record::record(string line) //thewrw oti dineis sxetika swsto record kai xeirizo
         else if (i == 2) lname = tmp;
         else if (i == 3) disease = tmp;
         else if (i == 4) country = tmp;
-        else if (i == 5)
+        else if (i == 6)
         {
             date tmpD(tmp);
             entryD.set_day(tmpD.get_day());
             entryD.set_month(tmpD.get_month());
             entryD.set_year(tmpD.get_year());
         }
-        else if (i == 6)
+        else if (i == 7)
         {
             //std::cerr << tmp << "\n";
             if (tmp == "-")
@@ -61,6 +61,10 @@ record::record(string line) //thewrw oti dineis sxetika swsto record kai xeirizo
                 }
             }
         }
+        else if (i == 5)
+        {
+            age = atoi(tmp.c_str());
+        }
     }
     delete[] cstr;
     delete pch;
@@ -76,6 +80,7 @@ record::record(record &r) //copy constructor //kaleitai ws record r1 = r2;
     this->country = r.get_country();
     this->entryD = r.get_entryDate();
     this->exitD = r.get_exitDate();
+    this->age = r.get_age();
 }
 
 record::~record() {}
@@ -134,7 +139,10 @@ date * record::get_exitDatePtr()
 {
     return &exitD;
 }
-
+int record::get_age()
+{
+    return age;
+}
 void record::set_id(std::string id_to_be)
 {
     this->id = id_to_be;
@@ -186,14 +194,18 @@ void record::set_exitD(std::string exD)
         return;
     }
 }
-
+void record::set_age(int a)
+{
+    age = a;
+    return;
+}
 void record::print_record()
 {
     std::cout << id << " " << fname << " " << lname << " " << disease << " " << country << " " << entryD.get_date_as_string() << " ";
     if (exitD.set == true) {
-        std::cout << exitD.get_date_as_string() << "\n";
+        std::cout << exitD.get_date_as_string() << age << "\n";
     } else {
-        std::cout << "\n";
+        std::cout << age << "\n";
     }
 
     return;

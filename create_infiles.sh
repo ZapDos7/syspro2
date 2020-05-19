@@ -28,6 +28,9 @@ echo $countrNum #184 countriesFile.txt
 
 mkdir -p "$3"
 
+#IDs
+ARRAY=()
+
 #read files
 FLOOR=1900
 counter=$4
@@ -61,6 +64,11 @@ do
         do
             #tuxaio string me arithmous kai noumera - 5 xaraktires
             id="$(random-string 5)"
+            while [ [ ${arr[*]} =~ id ] ] #while ID is in array
+            do
+                id="$(random-string 5)" #generate new array
+            done #while gia elegxo unique ID
+            ARRAY+=('id') #used IDs get here to we only get unique ones throughout the iterations for all countries
             #enter i exit:
             arr[0]="ENTER"
             arr[1]="EXIT" #gia na exei exit prepei na uparxei allou enter!!!

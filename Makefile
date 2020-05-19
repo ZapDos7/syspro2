@@ -4,7 +4,7 @@ SCRIPT = create_infiles.sh
 SOURCES=main.cpp date.cpp record.cpp ht.cpp aht.cpp bb.cpp tree.cpp heap.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=diseaseAggregator
-ARGS= -w 3 -b 64 -i ../folder
+ARGS= -w 3 -b 64 -i ../folder2
 #-w -> number of workers, -b -> buffersize for pipes, -i -> input directory
 VAL=valgrind --leak-check=full
 
@@ -27,4 +27,4 @@ val:
 	$(VAL) ./$(EXECUTABLE) $(FILE) $(ARGS)
 
 script:
-	./$(SCRIPT) diseasesFile.txt countriesFileSmall.txt ../folder 5 10
+	./$(SCRIPT) diseasesFile.txt countriesFileXSmall.txt ../folder2 5 10

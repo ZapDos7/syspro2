@@ -15,6 +15,7 @@ private:
     std::string country; //oxi kena, mono grammata
     date entryD; /*entryDate:  DD-MM-YYYY */
     date exitD; /*exitDate:   DD-MM-YYYY or "-" (den exei eksitirio akoma o asthenis)*/
+    int age;
 
 public:
     record();
@@ -32,6 +33,7 @@ public:
     date * get_entryDatePtr();
     date get_exitDate();
     date * get_exitDatePtr();
+    int get_age();
     void set_id(std::string id_to_be);
     void set_fname(std::string fn);
     void set_lname(std::string ln);
@@ -39,6 +41,7 @@ public:
     void set_country(std::string cntr);
     void set_entryD(std::string enD);
     void set_exitD(std::string exD);
+    void set_age(int a);
     void print_record();
 };
 

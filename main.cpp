@@ -13,22 +13,7 @@ System Programming Project #2, Spring 2020
 #include "record.h" //record class
 #include "bb.h" //blocks and buckets
 #include "heap.h"
-
-//shmeiwseis mathimatos
-void do_ls ( char dirname []) //displays all directories that can be opened
-{
-    DIR * dir_ptr ;
-    struct dirent * direntp ;
-    if ( ( dir_ptr = opendir ( dirname ) ) == NULL )
-        fprintf ( stderr , " cannot open %s \n " , dirname ) ;
-    else {
-        while ( ( direntp = readdir ( dir_ptr ) ) != NULL )
-        if ((strcmp(direntp->d_name, ".")!=0)||(strcmp(direntp->d_name, "..")!=0))
-            printf ( "%s\n " , direntp->d_name );
-        else printf("I'm dot(s).\n");
-        closedir ( dir_ptr ) ;
-    }
-}
+#include <unistd.h>
 
 bool date_format(std::string str) //elegxei oti ena string einai stin morfi XX-YY-ZZZZ
 {
@@ -99,9 +84,132 @@ int main(int argc, char const *argv[])
         exit(-1);	
     }
 
-    do_ls(in_dir); //doesn't skip "." and ".."
-    //just a worker
+    //hash tables!
+    ht my_ht(w*b*10); //yolo
+    aht diseaseHT(w*b*10, 1024);
+    aht countryHT(w*b*10, 1024);
+    
+
     //read all subfolders in input directory
+    DIR *dir;
+    DIR *dir2;
+    struct dirent *entry;
+    struct dirent *entry2;
+
+    std::ifstream dataset; //edw 8a kanw open to dataset m!
+    if (!(dir = opendir(in_dir))) return -2;
+
+    while ((entry = readdir(dir)) != NULL)
+    {
+        if (entry->d_type == DT_DIR) //if it is a directory, access
+        { 
+            char path[1024]; //subdir is now the new arguement
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+            snprintf(path, sizeof(path), "%s/%s", in_dir, entry->d_name);
+            //edw eimai se mia xwra p.x. ~/Sudan/
+            
+            //pame ena level mesa tr
+            if (!(dir2=opendir(path))) return -2;
+            //anoigw to directory tis xwras kai paw na diavasw ta arxeia edw
+            while ((entry2 = readdir(dir2)) != NULL)
+            {
+                if (entry2->d_type == DT_DIR) //if it is a directory, access
+                {
+                    if (strcmp(entry2->d_name, ".") == 0 || strcmp(entry2->d_name, "..") == 0) continue;
+                    std::cerr <<"error\n"; //den prepei na tupwsei tpt gt exoume 1 level subdir mono oxi parapanw!
+                }
+                else //else tha einai file ara anoigoume kok
+                {
+                    std::cerr << "entry2 is " << entry2->d_name << "\n";
+                    //file name --> DD-MM-YYYY, not directyor!!
+                    char s[100];
+                    //printf("%s\n", getcwd(s, 100)); 
+                    if (getcwd(s, 100)==NULL) std::cerr << "error\n";
+                    //else we gucci
+                    std::string subdir=s;   // /home/ioanna/Desktop/syspro2
+                    subdir+="/";            // /home/ioanna/Desktop/syspro2/
+                    subdir+=in_dir;         // /home/ioanna/Desktop/syspro2/../folder2
+                    subdir+="/";            // /home/ioanna/Desktop/syspro2/../folder2/
+                    subdir+=entry->d_name;  // /home/ioanna/Desktop/syspro2/../folder2/Sudan
+                    subdir+="/";            // /home/ioanna/Desktop/syspro2/../folder2/Sudan/
+                    //std::cerr << "subdir is " << subdir << "\n";
+
+                    int checkdir = chdir(subdir.c_str());
+                    //printf("%s\n", getcwd(s, 100)); 
+                    if (checkdir!=0)
+                    {
+                        std::cerr << "error in chdir!\n";
+                    }
+                    else
+                    {
+                        dataset.open(entry2->d_name);
+                        if (dataset.is_open()==0) std::cerr << "error\n";
+                        //else read content
+                        std::string line;
+                        while (std::getline(dataset, line))	 //diavazei olo to this date --> we gotta do it for all files in this folder
+                        {	
+                            //std::cerr << line << "\n";
+                            //line read: ID ENTER fn ln disease age
+                            //constructor gia record: ID FName Lname DIsease Country age entryD exitD/-
+                            //make line as should be
+                            std::string wannabe="";
+                            std::string help[6]; //boithitiki domi me ta tokens tou line pou 8a ftiaksw swsta
+                            int counter = 0;
+                            const char* c_string = line.c_str();
+                            char* token = strtok((char*)c_string, " ");
+                            while (token) {
+                                std::cerr << token << '\n';
+                                help[counter] = token;
+                                token = strtok(NULL, " ");
+                                counter++;
+                            }
+                            wannabe+=help[0]; //wannabe="ID"
+                            wannabe+=" ";
+                            wannabe+=help[2]; //wannabe="ID Fname"
+                            wannabe+=" ";
+                            wannabe+=help[3]; //wannabe="ID Fname Lname"
+                            wannabe+=" ";
+                            wannabe+=help[4]; //wannabe="ID Fname Lname Disease"
+                            wannabe+=" ";
+                            wannabe+=entry->d_name; //wannabe="ID Fname Lname Disease Country"
+                            wannabe+=" ";
+                            wannabe+=help[5]; //wannabe="ID Fname Lname Disease Country Age"
+                            wannabe+=" ";
+                            if (help[1]=="ENTRY") //exoume eisodo
+                            {
+                                wannabe+=entry->d_name; //wannabe="ID Fname Lname Disease Country Age EntryDate"
+                                wannabe+=" ";
+                            }
+                            else if (help[1]=="EXIT")
+                            {
+                                //an einai exit prepei na doume an uparxei idi auti i eggrafi
+                                //omws edw den exoume dei ti paizei me eggrafes!!
+
+                            }
+                            //eidallws problemo
+
+
+                            //check for exit/entry shit, 
+                            //put in the 3 hash tables, 
+                            //gucci
+                        }
+                        dataset.close();
+                        //next file same directory now:
+                    }
+                }
+                int checkdir = chdir("../");
+                if (checkdir!=0) std::cerr << "error\n";
+                //else std::cerr << "next country now\n";
+            }
+        }
+        else
+        {
+            std::cout << "error\n";
+        }
+    }
+    closedir(dir);
+    return 0;
+    
     //save all records chronologically in hash table:
         //read each line
         //if ENTRY, make a string "ID Fname Lname Disease Country(from directory) entryDate(from directory) -"
@@ -111,19 +219,8 @@ int main(int argc, char const *argv[])
 
 
 
-    std::ifstream dataset(in_dir); //dataset: recordID FName LName diseaseID Country entryDate exitDate	
-    std::string line;	
-    unsigned int records_num = 0;	
-    while (std::getline(dataset, line))	
-    {	
-        records_num++;	
-    }
-    ht my_ht(records_num * 3 / 4); //ht size = 0.75 * (plithos records from file) => not the worst seek time (project algorithmika)	
-    aht diseaseHT(records_num * 3 / 4, 1024);
-    aht countryHT(records_num * 3 / 4, 1024);	
-    //reread file and actually keep info	
-    dataset.clear();	
-    dataset.seekg(0);	
+    //std::ifstream dataset(in_dir); //dataset: recordID FName LName diseaseID Country entryDate exitDate	
+    /*std::string line;
     while (std::getline(dataset, line)) {	
         record temp_r(line); //temp r	
         record * elegxos = my_ht.insert(&temp_r); //edw ginetai kai elegxos gia unique IDs	
@@ -137,6 +234,8 @@ int main(int argc, char const *argv[])
             countryHT.ainsert(elegxos, true);	
         }	
     }
+    */
+    /*
     std::string com; //command
 
     //std::cout << "Enter desired function:\n";
@@ -209,19 +308,17 @@ int main(int argc, char const *argv[])
             {//An oxi country orisma, gia kathe country, print posa Virus metaksu twn 2 dates
                 if (counter==4) //posa virusName krousmata anamesa sto date1 date2
                 {//den exw country
-                    //std::cout << /*"Disease named " << virusName << " has "" " << apantisi->stats(d1,d2) << /*" records.\n";"\n";
+                    std::cout << virusName << " " << apantisi->stats(d1,d2) << "\n";
                 }
                 else if(counter==5) //exei country
                 {//An nai, mono gi auto to country print posa Virus metaksu twn 2 dates
                     std::string cntrName = comms[4];
-                    std::cout << /*"Disease named " <<*/ virusName <</* " has " " "<< */apantisi->statsC(d1, d2, cntrName) /*<< " records for country named " << cntrName << ".\n";*/ << "\n";
+                    std::cout << virusName << " " << apantisi->statsC(d1, d2, cntrName) << "\n";
                 }
                 else //mou edwses alla m nt alla
                 {
-                    //std::cerr << "Type properly.(8)\n";
                     std::cerr << "error\n";
                 }
-                
             }
         }	
         else if (comms[0] == "/topk-Diseases") //10. /topk-Diseases k country [date1 date2]	
@@ -309,5 +406,6 @@ int main(int argc, char const *argv[])
         }	
         delete[] cstr; //just in case	
     } //end while(1)
+    */
     return 0;	
 }
