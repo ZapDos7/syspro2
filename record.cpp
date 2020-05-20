@@ -12,10 +12,11 @@ record::record(string line) //thewrw oti dineis sxetika swsto record kai xeirizo
     const char delim[5] = " \r\n\t";//\0
     pch = strtok(cstr, delim);
     short unsigned int counter = 0;
-    char* parts[8]; //+1 gia age!
+    char* parts[8]; //+1 gia age! apo tin proigoumeni ergasia
     while (pch != NULL)
     {
         parts[counter] = pch;
+        //std::cerr << pch << "\n";
         if (counter==8) //ama dw8ei o,ti na nai gia record, yeet -> this saves us from a seg fault an dw8ei dld record swsta kai meta akura strings
         {
             pch = strtok(NULL, delim);
@@ -24,15 +25,17 @@ record::record(string line) //thewrw oti dineis sxetika swsto record kai xeirizo
         counter++;
         pch = strtok(NULL, delim);
     }
-    std::cerr << counter << "\n";
+    //std::cerr << counter << "\n";
     for (unsigned int i = 0; i < 8; i++)
     {
         string tmp(parts[i]);
+        //std::cerr << tmp << '\n';
         if (i == 0) id = tmp;
         else if (i == 1) fname = tmp;
         else if (i == 2) lname = tmp;
         else if (i == 3) disease = tmp;
         else if (i == 4) country = tmp;
+        else if (i == 5) age = stoi(tmp);
         else if (i == 6)
         {
             date tmpD(tmp);
@@ -43,13 +46,13 @@ record::record(string line) //thewrw oti dineis sxetika swsto record kai xeirizo
         else if (i == 7)
         {
             //std::cerr << tmp << "\n";
-            if (tmp == "-")
+            if ((tmp == "-")||(counter==7)) //an mou edwses - h an mou edwses kati pou den einai date, den exei exit date
             {
-                date tmpD(tmp);
+                date tmpD("-");
                 exitD.set = false; //date's set == false so it's just a dash!
                 //std::cerr << "I'm a dash!: " << exitD.get_date_as_string() << "\n";
             }
-            else
+            else //to last part einai date ara yay!
             {
                 date tmpD(tmp);
                 exitD.set_day(tmpD.get_day());
@@ -61,10 +64,6 @@ record::record(string line) //thewrw oti dineis sxetika swsto record kai xeirizo
                     exit(-1);
                 }
             }
-        }
-        else if (i == 5)
-        {
-            age = atoi(tmp.c_str());
         }
     }
     delete[] cstr;
@@ -202,11 +201,11 @@ void record::set_age(int a)
 }
 void record::print_record()
 {
-    std::cout << id << " " << fname << " " << lname << " " << disease << " " << country << " " << entryD.get_date_as_string() << " ";
+    std::cout << id << " " << fname << " " << lname << " " << disease << " " << country << " "  << age << " "<< entryD.get_date_as_string() << " ";
     if (exitD.set == true) {
-        std::cout << exitD.get_date_as_string() << age << "\n";
+        std::cout << exitD.get_date_as_string() << "\n";
     } else {
-        std::cout << age << "\n";
+        std::cout << "\n";
     }
 
     return;

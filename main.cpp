@@ -89,7 +89,25 @@ int main(int argc, char const *argv[])
     aht diseaseHT(w*b*10, 1024);
     aht countryHT(w*b*10, 1024);
     
+    //test!
+    /*record r;
+    r.set_id("wwj04");
+    r.set_fname("hukkfjoqgc");
+    r.set_lname("rewrvqqb");
+    r.set_disease("URDO");
+    r.set_country("Sudan");
+    r.set_age(6);
+    r.set_entryD("21-2-2016");
+    r.print_record();
+    
+    record temppulis("wwj04 hukkfjoqgc rewrvqqb URDO Sudan 6 21-2-2016 30-3-2020");
+    temppulis.print_record();
 
+    record temppulis2("wwj04 hukkfjoqgc rewrvqqb URDO Sudan 6 21-2-2016");
+    temppulis2.print_record();
+    return 0;
+    */
+    
     //read all subfolders in input directory
     DIR *dir;
     DIR *dir2;
@@ -120,11 +138,13 @@ int main(int argc, char const *argv[])
                 }
                 else //else tha einai file ara anoigoume kok
                 {
-                    std::cerr << "entry2 is " << entry2->d_name << "\n";
-                    //file name --> DD-MM-YYYY, not directyor!!
+                    //std::cerr << "entry2 is " << entry2->d_name << "\n";
                     char s[100];
-                    //printf("%s\n", getcwd(s, 100)); 
-                    if (getcwd(s, 100)==NULL) std::cerr << "error\n";
+                    if (getcwd(s, 100)==NULL)
+                    {
+                        std::cerr << "error\n";
+                        return -3;
+                    }
                     //else we gucci
                     std::string subdir=s;   // /home/ioanna/Desktop/syspro2
                     subdir+="/";            // /home/ioanna/Desktop/syspro2/
@@ -151,14 +171,13 @@ int main(int argc, char const *argv[])
                             //std::cerr << line << "\n";
                             //line read: ID ENTER fn ln disease age
                             //constructor gia record: ID FName Lname DIsease Country age entryD exitD/-
-                            //make line as should be
                             std::string wannabe="";
                             std::string help[6]; //boithitiki domi me ta tokens tou line pou 8a ftiaksw swsta
                             int counter = 0;
                             const char* c_string = line.c_str();
                             char* token = strtok((char*)c_string, " ");
                             while (token) {
-                                std::cerr << token << '\n';
+                                //std::cerr << token << '\n';
                                 help[counter] = token;
                                 token = strtok(NULL, " ");
                                 counter++;
@@ -175,23 +194,64 @@ int main(int argc, char const *argv[])
                             wannabe+=" ";
                             wannabe+=help[5]; //wannabe="ID Fname Lname Disease Country Age"
                             wannabe+=" ";
-                            if (help[1]=="ENTRY") //exoume eisodo
+                            //std::cerr << help[1] <<"\n";
+                            if (help[1]=="ENTER") //exoume eisodo
                             {
-                                wannabe+=entry->d_name; //wannabe="ID Fname Lname Disease Country Age EntryDate"
+                                //std::cerr << "entry\n";
+                                wannabe+=entry2->d_name; //wannabe="ID Fname Lname Disease Country Age EntryDate"
                                 wannabe+=" ";
+                                //std::cerr << "wannabe is " <<  wannabe << "\n";
+                                record temp_r(wannabe);
+                                record * elegxos = my_ht.insert(&temp_r); //edw ginetai kai elegxos gia unique IDs	
+                                if (elegxos == NULL)
+                                {
+                                    break; //like ergasia 1 an den mpike (i insert kanei elegxo an uparxei idi to ID kai to petaei)
+                                }
+                                else
+                                {
+                                    //it's gucci so we insert to the other hash tables
+                                    diseaseHT.ainsert(elegxos, false);
+                                    countryHT.ainsert(elegxos, true);
+                                }
                             }
-                            else if (help[1]=="EXIT")
+                            else if (help[1]=="EXIT") //edine exit date! ara elegxoume:
                             {
-                                //an einai exit prepei na doume an uparxei idi auti i eggrafi
-                                //omws edw den exoume dei ti paizei me eggrafes!!
-
+                                //std::cerr << "exit\n";
+                                ht_item * h = my_ht.search(help[0]); //anazitisi vasei ID
+                                if (h != NULL) //an uparxei to record
+                                {
+                                    //idia me ergasia 1 --> gucci
+                                    date d2(entry2->d_name); //d2 = ti paw na valw
+                                    date *d1 = h->rec->get_exitDatePtr(); //to uparxon exit date
+                                    bool magkas = d1->set; //ama eixa prin set=true ara eixa idi exit date, true, else false
+                                    date *din = h->rec->get_entryDatePtr(); //to entry date tou record
+                                    if (isLater(d2, *din) == 1) //pas na mou baleis kati pou den einai later tou entry date m
+                                    {	
+                                        //std::cerr << "Entry date later than desired exit date. You're not The Doctor.\n";
+                                        std::cerr << "error\n";
+                                    }	
+                                    else	
+                                    {	
+                                        h->rec->set_exitD(d2.get_date_as_string()); //twra exei exit date
+                                        if (magkas==false) //prin den imoun set ara update counters:
+                                        {
+                                            block * blokaki1 = diseaseHT.search(help[0]);
+                                            if (blokaki1!=NULL)
+                                            {
+                                                blokaki1->update_c_in(false);
+                                            }
+                                            block * blokaki2 = countryHT.search(help[0]);
+                                            if (blokaki2!=NULL)
+                                            {
+                                                blokaki2->update_c_in(false);
+                                            }
+                                        }
+                                        //eidallws oi metrites den allazoun!
+                                    }
+                                }
+                                //else den uparxei to record ara we yeet this
+                                //den kaliptei tin periptwsi na einai argotera to date alla auto to elegxei i upoloipi main basei tou me pia seira diavazei ta arxeia so we gucci
                             }
-                            //eidallws problemo
-
-
-                            //check for exit/entry shit, 
-                            //put in the 3 hash tables, 
-                            //gucci
                         }
                         dataset.close();
                         //next file same directory now:
@@ -208,34 +268,12 @@ int main(int argc, char const *argv[])
         }
     }
     closedir(dir);
+
+    std::cerr << my_ht.get_size() << " " << diseaseHT.get_size() << " " << countryHT.get_size() << "\n";
     return 0;
     
-    //save all records chronologically in hash table:
-        //read each line
-        //if ENTRY, make a string "ID Fname Lname Disease Country(from directory) entryDate(from directory) -"
-        //if same ID, EXIT --> update exit date in the hash table saved record
-    //prepare structurs for answers to the commands
-
-
-
-
-    //std::ifstream dataset(in_dir); //dataset: recordID FName LName diseaseID Country entryDate exitDate	
-    /*std::string line;
-    while (std::getline(dataset, line)) {	
-        record temp_r(line); //temp r	
-        record * elegxos = my_ht.insert(&temp_r); //edw ginetai kai elegxos gia unique IDs	
-        if (elegxos == NULL)	
-        {	
-            break; //sto piazza eipw8ike oti an brethei kapoio ID duplicate, na proxwrame stis entoles & na mhn sunexizoun ta insertions.	
-        }	
-        else	
-        {	
-            diseaseHT.ainsert(elegxos, false);	
-            countryHT.ainsert(elegxos, true);	
-        }	
-    }
-    */
-    /*
+    
+    
     std::string com; //command
 
     //std::cout << "Enter desired function:\n";
@@ -406,6 +444,5 @@ int main(int argc, char const *argv[])
         }	
         delete[] cstr; //just in case	
     } //end while(1)
-    */
     return 0;	
 }
