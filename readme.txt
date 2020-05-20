@@ -9,6 +9,8 @@ Contents:
 - this readme
 - Makefile
 - create_infiles.sh (the required bash script)
+- previous assignment's files (bb, date, heap, ht, record, tree .cpp & .h files)
+- main.cpp
 
 Use:
 - While in the project folder, run "$make" to create the .o files and the executable

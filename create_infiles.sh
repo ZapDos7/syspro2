@@ -62,17 +62,25 @@ do
         fi
         while [ $counter2 -gt 0 ] #10 9 8 7 ...
         do
-            #tuxaio string me arithmous kai noumera - 5 xaraktires
+            rand=$[ $RANDOM % 2 ]
             id="$(random-string 5)"
-            while [ [ ${arr[*]} =~ id ] ] #while ID is in array
-            do
-                id="$(random-string 5)" #generate new array
-            done #while gia elegxo unique ID
+            if [ $rand -eq 0 ] #exoume entry
+                #tuxaio string me arithmous kai noumera - 5 xaraktires
+                while [ [ ${arr[*]} =~ id ] ] #while ID is in array
+                do
+                    id="$(random-string 5)" #generate new id
+                done #while gia elegxo unique ID
+            else #exoume exit ara prepei na uparxei idi to ID
+                while [ ! [ ${arr[*]} =~ id ] ] #while ID is not in array
+                do
+                    id="$(random-string 5)" #generate new id
+                done #while gia elegxo existing ID
+            fi
+            
             ARRAY+=('id') #used IDs get here to we only get unique ones throughout the iterations for all countries
             #enter i exit:
             arr[0]="ENTER"
             arr[1]="EXIT" #gia na exei exit prepei na uparxei allou enter!!!
-            rand=$[ $RANDOM % 2 ]
             second=${arr[$rand]}
             #tuxaio string mono xaraktirwn megethous 1 ews 10
             fname="$(random-name "$(( ( RANDOM % 10 )  + 1 ))")"

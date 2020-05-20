@@ -1,7 +1,7 @@
 CC=g++ -std=c++11
 CFLAGS=-c -Wpedantic -Ofast -Wall
 SCRIPT = create_infiles.sh
-SOURCES=main.cpp date.cpp record.cpp ht.cpp aht.cpp bb.cpp tree.cpp heap.cpp
+SOURCES=main.cpp date.cpp record.cpp ht.cpp aht.cpp bb.cpp tree.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=diseaseAggregator
 ARGS= -w 3 -b 64 -i ../folder2
