@@ -225,6 +225,7 @@ int main(int argc, char const *argv[])
                     {	
                         //line read: ID ENTER fn ln disease age
                         //constructor gia record: ID FName Lname DIsease Country age entryD exitD/-
+                        //std::cerr << "paw na valw " << line <<"\n";
                         std::string wannabe="";
                         std::string help[6]; //boithitiki domi me ta tokens tou line pou 8a ftiaksw swsta
                         int counter = 0;
@@ -248,18 +249,29 @@ int main(int argc, char const *argv[])
                         wannabe+=" ";
                         wannabe+=help[5]; //wannabe="ID Fname Lname Disease Country Age"
                         wannabe+=" ";
-                        if (help[1]=="ENTRY") //exoume eisodo
+                        if (help[1]=="ENTER") //exoume eisodo
                         {
-                            wannabe+=entry->d_name; //wannabe="ID Fname Lname Disease Country Age EntryDate"
-                            wannabe+=" ";
-                            record temp_r(wannabe); //temp r
+                            //std::cerr << entry2->d_name << "ein to date\t";
+                            //wannabe+=entry2->d_name; //wannabe="ID Fname Lname Disease Country Age EntryDate"
+                            wannabe+=date_file_names[i1];
+                            std::cerr << wannabe << "\n";
+
+                            record lala("ntber xwctbce jyjzwsg Salmonella Sudan 74 18-6-1945");
+                            lala.print_record();
+                            //
+                            //why doesnt the one based on wannabe work if wanna be is the same string as the one above?
+                            //
+                            record temp_r(wannabe); //temp record gai insert
+                            temp_r.print_record();
                             record * elegxos = my_ht.insert(&temp_r); //edw ginetai kai elegxos gia unique IDs
                             if (elegxos == NULL)
                             {
+                                std::cerr << "den evala to " << elegxos->get_id() << "\n";
                                 break; //sto piazza eipw8ike oti an brethei kapoio ID duplicate, na proxwrame stis entoles & na mhn sunexizoun ta insertions.
                             }
                             else
                             {
+                                std::cerr << "evala to " << elegxos->get_id() << "\n";
                                 diseaseHT.ainsert(elegxos, false);
                                 countryHT.ainsert(elegxos, true);
                             }
@@ -306,10 +318,201 @@ int main(int argc, char const *argv[])
                 }//diavase to epomeno arxeio tr
             } //end for gia chronological
             closedir(dir2);
-            //i=0;
+            //i=0; //de xreiazetai gt midenizetai mes tin loopa tou
         } //prepei na mpikan ola sta hash table, we gonna check now!
-        //epanamhdenizw ton arithmo
+        //epanamhdenizw ton arithmo arxeiwn giati paw se alli xwra
         posa_arxeia=0;
     }
+
+    ht_item *haha = my_ht.search("rvttq");
+    if (haha == NULL) std::cerr << "ekmek\n";
+    else std::cerr << "no ekmek\n";
+
+
+
+
+
+
+
+    /*
+    std::string com; //command
+
+    //std::cout << "Enter desired function:\n";
+    //while (1) { //an den dinei apo file
+    while (std::getline(std::cin, com)) { //aposxoliase otan bgaloun output format
+        //std::cout << "Enter desired function:\n";                                     //an den dinei apo file
+        //std::getline(std::cin, com); //std::cin >> com; doesn't work due to spaces    //an den dinei apo file
+        if (com.length() == 0)
+        {	
+            continue; //ama m dwseis enter, sunexizw na zhtaw entoles	
+        }	
+        char * cstr = new char[com.length() + 1]; //auto 8a kanw tokenize	
+        strcpy(cstr, com.c_str()); //copy as string to line sto cstr	
+        char * pch;	
+        const char delim[2] = " ";	
+        pch = strtok(cstr, delim);	
+        std::string comms[8]; //i entoli me ta perissotera orismata einai h insertPatientRecord me d2	
+        int counter = 0;	
+        comms[0] = pch;	
+        //check first word to match with command, check entire command if correct	
+        if (comms[0] == "/listCountries") // /listCountries --> for each country print PID of corresponding worker
+        {
+            std::cerr << "I am List Countries!\n";
+            //lala
+        }
+        else if (comms[0] == "/exit")	
+        {	
+            //workers -> log files
+            //free memory again as needed
+            delete[] cstr;
+            std::cout << "exiting\n";
+            return 0;	
+        }	
+        else if (comms[0] == "/diseaseFrequency") //8. /diseaseFrequency virusName date1 date2 [country]	
+        {	
+            //same but make it for each worker in the future
+            while (pch != NULL)
+            {	
+                comms[counter] = pch;	
+                counter++;	
+                pch = strtok(NULL, delim);	
+            }
+            std::string virusName = comms[1];
+            std::string wannabedate1 = comms[2];
+            std::string wannabedate2 = comms[3];
+            if ((date_format(wannabedate1)==false)||(date_format(wannabedate2)==false))
+            {
+                //std::cerr << "Type properly.(6)\n";
+                std::cerr << "error\n";
+                break;
+            }
+            //else
+            date d1(wannabedate1);
+            date d2(wannabedate2);
+            if (isLater(d1,d2)==-1) //an d1>d2, epistrefei -1
+            {
+                //std::cerr << "Type properly.(7)\n";
+                std::cerr << "error\n";
+                break;
+            }
+            //else ok
+            block * apantisi = diseaseHT.search(virusName);
+            if (apantisi==NULL) //mou zitas na brw kati pou den exw sti vasi m
+            {
+                //std::cout << "Disease named " << virusName << " has 0 records.\n";"0\n"; //if not exists, return 0
+                //else
+                std::cerr << "error\n";
+            }
+            else //to brika
+            {//An oxi country orisma, gia kathe country, print posa Virus metaksu twn 2 dates
+                if (counter==4) //posa virusName krousmata anamesa sto date1 date2
+                {//den exw country
+                    std::cout << virusName << " " << apantisi->stats(d1,d2) << "\n";
+                }
+                else if(counter==5) //exei country
+                {//An nai, mono gi auto to country print posa Virus metaksu twn 2 dates
+                    std::string cntrName = comms[4];
+                    std::cout << virusName << " " << apantisi->statsC(d1, d2, cntrName) << "\n";
+                }
+                else //mou edwses alla m nt alla
+                {
+                    std::cerr << "error\n";
+                }
+            }
+        }	
+        else if (comms[0] == "/topk-Diseases") //10. /topk-Diseases k country [date1 date2]	
+        {//Gia to country, which k viruses are top (most krousmata) [between dates if given]
+            //same but make it for each worker in the future
+            while (pch != NULL)
+            {	
+                comms[counter] = pch;	
+                counter++;	
+                pch = strtok(NULL, delim);	
+            }
+            int k = atoi(comms[1].c_str());
+            //std::cerr << k <<"\n";
+            std::string countryName = comms[2];
+            //std::cerr << countryName <<"\n";
+            //pame stin entoli:
+            block * b = countryHT.search(countryName);
+            //b->print_blk(true);
+            if (b==NULL)
+            {
+                //std::cerr << countryName << " has no records.\n";
+                std::cerr << "error\n"; //else print
+                //std::cerr << countryName << " 0\n";
+            }
+            else
+            {
+                if (counter==3)
+                {
+                    b->top_k_diseases(k);
+                }
+                else if (counter==5)
+                {
+                    //std::cerr << "exw dates!\n";
+                    std::string wannabedate1 = comms[3];
+                    std::string wannabedate2 = comms[4];
+                    if ((date_format(wannabedate1)==false)||(date_format(wannabedate2)==false))
+                    {
+                        //std::cerr << "Type properly.(6)";
+                        std::cerr << "error\n";
+                        break;
+                    }
+                    //else dates are ok
+                    date d1(wannabedate1);
+                    date d2(wannabedate2);
+                    if (isLater(d1,d2)==-1) //an d1>d2, epistrefei -1
+                    {
+                        //std::cerr << "Type properly.(7)";
+                        std::cerr << "error\n";
+                        break;
+                    }//else dates are ok ok ara kaloume
+                    b->top_k_diseases(k, d1, d2);
+                }
+                else
+                {
+                    std::cerr << "error\n";
+                }
+                
+            }
+        }
+        else if (comms[0] == "/topk-AgeRanges")
+        {
+            std::cerr << "I am topk age ranges!\n";
+            //  /topk-AgeRanges k country disease d1 d2 --> age range & pososta
+        }
+        else if (comms[0] == "/searchPatientRecord")
+        {
+            std::cerr << "I am search patient record!\n";
+            //  /searchPatientRecord recordID
+            //o Aggr stelnei se olous tous workers kai perimenei apantisi
+        }
+        else if (comms[0] == "/numPatientAdmissions")
+        {
+            std::cerr << "I am num patient admissions!\n";
+            //  /numPatientAdmissions disease d1 d2 [country]
+        }
+        else if (comms[0] == "/numPatientDischarges")
+        {
+            std::cerr << "I am numPatientDischarges!\n";
+            //  /numPatientDischarges disease d1 d2 [country]
+        }
+        else
+        {	
+            //std::cerr << "Unknown Command!\n"; //doesn't exit the program, gives the user another chance to type properly this time.	
+            std::cerr << "error\n";
+        }	
+        delete[] cstr; //just in case	
+    } //end while(1)
+    */
+
+
+
+
+
+
+
+
     return 0;
 }
