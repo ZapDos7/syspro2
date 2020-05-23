@@ -251,18 +251,14 @@ int main(int argc, char const *argv[])
                         wannabe+=" ";
                         if (help[1]=="ENTER") //exoume eisodo
                         {
-                            //std::cerr << entry2->d_name << "ein to date\t";
-                            //wannabe+=entry2->d_name; //wannabe="ID Fname Lname Disease Country Age EntryDate"
                             wannabe+=date_file_names[i1];
-                            std::cerr << wannabe << "\n";
 
-                            record lala("ntber xwctbce jyjzwsg Salmonella Sudan 74 18-6-1945");
-                            lala.print_record();
-                            //
-                            //why doesnt the one based on wannabe work if wanna be is the same string as the one above?
-                            //
-                            record temp_r(wannabe); //temp record gai insert
-                            temp_r.print_record();
+                            //record lala("ntber xwctbce jyjzwsg Salmonella Sudan 74 18-6-1945");
+                            //lala.print_record();
+                            //if (wannabe!="ntber xwctbce jyjzwsg Salmonella Sudan 74 18-6-1945") std::cerr << "ma pws?\n";
+                            //else std::cerr << "ok\n";
+                            record temp_r(wannabe); //temp record gia insert
+
                             record * elegxos = my_ht.insert(&temp_r); //edw ginetai kai elegxos gia unique IDs
                             if (elegxos == NULL)
                             {
@@ -324,17 +320,8 @@ int main(int argc, char const *argv[])
         posa_arxeia=0;
     }
 
-    ht_item *haha = my_ht.search("rvttq");
-    if (haha == NULL) std::cerr << "ekmek\n";
-    else std::cerr << "no ekmek\n";
-
-
-
-
-
-
-
-    /*
+    
+    //commands
     std::string com; //command
 
     //std::cout << "Enter desired function:\n";
@@ -358,7 +345,7 @@ int main(int argc, char const *argv[])
         if (comms[0] == "/listCountries") // /listCountries --> for each country print PID of corresponding worker
         {
             std::cerr << "I am List Countries!\n";
-            //lala
+            //
         }
         else if (comms[0] == "/exit")	
         {	
@@ -480,13 +467,34 @@ int main(int argc, char const *argv[])
         else if (comms[0] == "/topk-AgeRanges")
         {
             std::cerr << "I am topk age ranges!\n";
+            //age ranges: 0-20, 21-40, 41-60, 60+
             //  /topk-AgeRanges k country disease d1 d2 --> age range & pososta
         }
         else if (comms[0] == "/searchPatientRecord")
         {
-            std::cerr << "I am search patient record!\n";
             //  /searchPatientRecord recordID
             //o Aggr stelnei se olous tous workers kai perimenei apantisi
+
+            while (pch != NULL) //kovw tin entoli sta parts tis
+            {	
+                comms[counter] = pch;	
+                counter++;	
+                pch = strtok(NULL, delim);	
+            }
+            if (counter!=2) std::cerr << "error1\n";
+            else
+            {
+                ht_item * anazitisis = my_ht.search(comms[counter-1]);
+                if (anazitisis==NULL) std::cerr << "error2\n";
+                else
+                {
+                    anazitisis->print_ht_item();
+                }
+                
+            }
+            
+            //search vasei ID
+            //return to record olo printed
         }
         else if (comms[0] == "/numPatientAdmissions")
         {
@@ -505,7 +513,6 @@ int main(int argc, char const *argv[])
         }	
         delete[] cstr; //just in case	
     } //end while(1)
-    */
 
 
 
