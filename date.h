@@ -7,7 +7,8 @@
 #include <stdlib.h>
 //DD-MM-YYYY
 
-class date {
+class date
+{
 private:
 public:
     short unsigned int day;

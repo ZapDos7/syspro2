@@ -129,7 +129,7 @@ long int tree::stats(tree_node *tr, date d1, date d2)
     metritis += stats(tr->right, d1, d2);
     return metritis;
 }
-long int tree::statsCx(tree_node * tr, date d1, date d2, std::string countryName)
+long int tree::statsCx(tree_node *tr, date d1, date d2, std::string countryName)
 {
     long int metritis = 0;
     if (tr == NULL) //recursion end
@@ -139,7 +139,7 @@ long int tree::statsCx(tree_node * tr, date d1, date d2, std::string countryName
     metritis += statsCx(tr->left, d1, d2, countryName);
     if (isBetween(*(tr->d), d1, d2) == true)
     {
-        if (tr->rec->get_country()==countryName)
+        if (tr->rec->get_country() == countryName)
         {
             metritis++;
         }
@@ -147,16 +147,18 @@ long int tree::statsCx(tree_node * tr, date d1, date d2, std::string countryName
     metritis += statsCx(tr->right, d1, d2, countryName);
     return metritis;
 }
-void tree::insert_to_heap_diseases(tree_node * tr, heap * swros)
+void tree::insert_to_heap_diseases(tree_node *tr, heap *swros)
 {
-    if (tr==NULL) return;
+    if (tr == NULL)
+        return;
     insert_to_heap_diseases(tr->left, swros);
     swros->insert(tr->rec->get_disease());
     insert_to_heap_diseases(tr->right, swros);
 }
-void tree::insert_to_heap_diseases_dates(tree_node * tr, heap * swros, date d1, date d2)
+void tree::insert_to_heap_diseases_dates(tree_node *tr, heap *swros, date d1, date d2)
 {
-    if (tr==NULL) return;
+    if (tr == NULL)
+        return;
     insert_to_heap_diseases_dates(tr->left, swros, d1, d2);
     if (isBetween(*(tr->d), d1, d2) == true)
     {
@@ -164,16 +166,18 @@ void tree::insert_to_heap_diseases_dates(tree_node * tr, heap * swros, date d1, 
     }
     insert_to_heap_diseases_dates(tr->right, swros, d1, d2);
 }
-void tree::insert_to_heap_countries(tree_node * tr, heap * swros)
+void tree::insert_to_heap_countries(tree_node *tr, heap *swros)
 {
-    if (tr==NULL) return;
+    if (tr == NULL)
+        return;
     insert_to_heap_countries(tr->left, swros);
     swros->insert(tr->rec->get_country());
     insert_to_heap_countries(tr->right, swros);
 }
-void tree::insert_to_heap_countries_dates(tree_node * tr, heap * swros, date d1, date d2)
+void tree::insert_to_heap_countries_dates(tree_node *tr, heap *swros, date d1, date d2)
 {
-    if (tr==NULL) return;
+    if (tr == NULL)
+        return;
     insert_to_heap_countries_dates(tr->left, swros, d1, d2);
     if (isBetween(*(tr->d), d1, d2) == true)
     {

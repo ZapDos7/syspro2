@@ -9,22 +9,23 @@ date::date(string str)
     if (str == "-")
     {
         this->set = false;
-    } else
+    }
+    else
     {
-        char * cstr = new char[str.length() + 1]; //auto 8a kanw tokenize
-        strcpy(cstr, str.c_str()); //copy as string to str sto cstr
-        char * pch;
+        char *cstr = new char[str.length() + 1]; //auto 8a kanw tokenize
+        strcpy(cstr, str.c_str());               //copy as string to str sto cstr
+        char *pch;
         const char delim[2] = "-";
         pch = strtok(cstr, delim);
         short unsigned int counter = 0;
-        char* parts[3];
+        char *parts[3];
         while (pch != NULL)
         {
             parts[counter] = pch;
-            if (counter==3) //ama dw8ei o,ti na nai gia date, yeet -> this saves us from a seg fault an dw8ei kati san 2-3-4-5
+            if (counter == 3) //ama dw8ei o,ti na nai gia date, yeet -> this saves us from a seg fault an dw8ei kati san 2-3-4-5
             {
                 pch = strtok(NULL, delim);
-                break;            
+                break;
             }
             counter++;
             pch = strtok(NULL, delim);
@@ -47,7 +48,6 @@ date::date(string str)
         {
             this->month = atoi(parts[1]);
         }
-
 
         if ((atoi(parts[0]) < 0) || (atoi(parts[0]) > 31))
         {
@@ -81,12 +81,12 @@ date::date(date &d) //copy constructor, kaleitai ws: date d1 = d2;
             //fprintf(stderr, "Invalid day\n");
             exit(1);
         }
-        if ((d.month == 2)&&(d.year % 4 == 0)&&(d.day > 29))
+        if ((d.month == 2) && (d.year % 4 == 0) && (d.day > 29))
         { //leap yeared feb
             //fprintf(stderr, "Invalid date format\n");
             exit(1);
         }
-        if (((d.month == 4) || (d.month == 6) || (d.month == 9) || (d.month == 11))&&(d.day > 30))
+        if (((d.month == 4) || (d.month == 6) || (d.month == 9) || (d.month == 11)) && (d.day > 30))
         { //30 day-d months
             //fprintf(stderr, "Invalid date format\n");
             exit(1);
@@ -100,29 +100,34 @@ date::date(date &d) //copy constructor, kaleitai ws: date d1 = d2;
 
 date::~date() {}
 
-int date::get_day() {
+int date::get_day()
+{
     if (this->set == true)
         return this->day;
     else
         return -1;
 }
 
-int date::get_month() {
+int date::get_month()
+{
     if (this->set == true)
         return this->month;
     else
         return -1;
 }
 
-int date::get_year() {
+int date::get_year()
+{
     if (this->set == true)
         return this->year;
     else
         return -1;
 }
 
-std::string date::get_date_as_string() {
-    if (set == true) {
+std::string date::get_date_as_string()
+{
+    if (set == true)
+    {
         std::string day = std::to_string(this->get_day());
         std::string month = std::to_string(this->get_month());
         std::string year = std::to_string(this->get_year());
@@ -187,7 +192,7 @@ void date::print_date()
 
 //check if d1 is between d2 & d3 => d2...d1...d3
 
-/*bool*/short int isLater(date d1, date d2) //is d1 later than d2?
+/*bool*/ short int isLater(date d1, date d2) //is d1 later than d2?
 {
     if ((d1.set == false) || (d2.set == false))
     {
@@ -230,7 +235,7 @@ bool isBetween(date d, date d1, date d2) //is d between d1 kai d2
         //fprintf(stderr, "No dates set to compare!\n");
         exit(-1);
     }
-    if ((isLater(d, d1) == -1)&&(isLater(d, d2) == 1))
+    if ((isLater(d, d1) == -1) && (isLater(d, d2) == 1))
     {
         return true; //pane d1 < d < d2
     }

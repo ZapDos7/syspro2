@@ -6,15 +6,16 @@
 #include <iostream>
 #include "date.h"
 
-class record {
+class record
+{
 private:
-    std::string id; //unique
-    std::string fname; //oxi kena, mono grammata
-    std::string lname; //oxi kena, mono grammata
+    std::string id;      //unique
+    std::string fname;   //oxi kena, mono grammata
+    std::string lname;   //oxi kena, mono grammata
     std::string disease; //string w/ letters, numbers kai "-"
     std::string country; //oxi kena, mono grammata
-    date entryD; /*entryDate:  DD-MM-YYYY */
-    date exitD; /*exitDate:   DD-MM-YYYY or "-" (den exei eksitirio akoma o asthenis)*/
+    date entryD;         /*entryDate:  DD-MM-YYYY */
+    date exitD;          /*exitDate:   DD-MM-YYYY or "-" (den exei eksitirio akoma o asthenis)*/
     int age;
 
 public:
@@ -26,13 +27,13 @@ public:
     std::string get_fname();
     std::string get_lname();
     std::string get_disease();
-    std::string * get_diseasePtr();
+    std::string *get_diseasePtr();
     std::string get_country();
-    std::string * get_countryPtr();
+    std::string *get_countryPtr();
     date get_entryDate();
-    date * get_entryDatePtr();
+    date *get_entryDatePtr();
     date get_exitDate();
-    date * get_exitDatePtr();
+    date *get_exitDatePtr();
     int get_age();
     void set_id(std::string id_to_be);
     void set_fname(std::string fn);

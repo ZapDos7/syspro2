@@ -1,10 +1,10 @@
 CC=g++ -std=c++11
 CFLAGS=-c -Wpedantic -Ofast -Wall
 SCRIPT = create_infiles.sh
-SOURCES=main.cpp date.cpp record.cpp ht.cpp aht.cpp bb.cpp tree.cpp heap.cpp
+SOURCES=main_aggregator.cpp main_worker.cpp date.cpp record.cpp ht.cpp aht.cpp bb.cpp tree.cpp heap.cpp Communication.cpp Pair.cpp PairArray.cpp PidArray.cpp quicksort.cpp StringArray.cpp date_format.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=diseaseAggregator
-ARGS= -w 3 -b 64 -i ../folder2
+ARGS= -w 3 -b 4096 -i ../input_dir
 #-w -> number of workers, -b -> buffersize for pipes, -i -> input directory
 VAL=valgrind --leak-check=full
 
@@ -27,4 +27,4 @@ val:
 	$(VAL) ./$(EXECUTABLE) $(FILE) $(ARGS)
 
 script:
-	./$(SCRIPT) diseasesFile.txt countriesFileXSmall.txt ../folder2 5 10
+	./$(SCRIPT) diseasesFile.txt countriesFileSmall.txt ../dir 5 10

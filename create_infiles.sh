@@ -50,8 +50,8 @@ do
         year=0 #init
         while [ "$year" -le $FLOOR ]
         do
-            year=$(( ( RANDOM % 2050 + 1 ) ))
-        done #end while gia na exoume xronies > 1900 just so stuff seem to make sense
+            year=$(( ( RANDOM % 2020 + 1 ) )) #1900-2020
+        done #end while gia na exoume xronies > 1900 just so stuff seem to make sense & have 4 digits
         FILE=$3/$line/$day-$month-$year
         if [[ -f "$FILE" ]]; then
             echo "$FILE exists"
