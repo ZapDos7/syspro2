@@ -9,7 +9,7 @@ class TripleArray : public Array<Triplette>
 {
 public:
     TripleArray(int capacity);
-
+    ~TripleArray();
     virtual void print();
 };
 

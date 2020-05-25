@@ -180,7 +180,6 @@ int main(int argc, char const *argv[])
 
     for (int i = 0; i < w; i++)
     {
-        std::cerr << i << "\n";
         char *buf = communicator.createBuffer();
         communicator.put(buf, "message\n");
         communicator.send(buf, pid_in_out.items[i].out);
