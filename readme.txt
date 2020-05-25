@@ -13,7 +13,8 @@ Contents:
 - main_aggregator.cpp, main_worker.cpp/.h
 - date_format, quicksort files
 - Pair.h/.cpp (class that combines info about: country, p_id, in and out fds)
-- Array.h which is a generic class of arrays used in PairArray, PidArray and StringArray.
+- Triplette.h/.cpp (class that connects a process with its in and out fds)
+- Array.h which is a generic class of arrays used in PairArray, PidArray, TripleArray and StringArray.
 
 Use:
 - While in the project folder, run "$make" to create the .o files and the executable

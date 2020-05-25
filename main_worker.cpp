@@ -32,10 +32,10 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
 
     StringArray countries(300);
 
-    int out_fd = open(name_out.c_str(), O_RDONLY);
-    int in_fd = open(name_in.c_str(), O_WRONLY);
+    int out_fd = open(name_out.c_str(), O_RDONLY); //edw diavazw ti m leei o AGGR
+    int in_fd = open(name_in.c_str(), O_WRONLY);   //edw grafw apantisi tou AGGR
 
-    cout << "child opened pipes " << child_pid << endl;
+    //cout << "child opened pipes " << child_pid << endl;
 
     while (true)
     {
@@ -51,7 +51,7 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
         communicator.destroyBuffer(buf);
     }
 
-    countries.print();
+    //countries.print();
 
     //directory metablites
     DIR *dir;
@@ -68,7 +68,7 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
     if (dir == NULL)
     {
         std::cerr << "error opening input directory\n";
-        return -1;
+        exit(-1);
     }
     //else
 
@@ -88,13 +88,12 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
             //else...
             snprintf(path, sizeof(path), "%s/%s", in_dir, entry->d_name); //path = "../folder2/Xwra"
 
-            std::cerr << "path is " << path << "\n";
+            //std::cerr << "path is " << path << "\n";
             //pame ena level mesa tr ara open to path
             dir2 = opendir(path);
             if (dir2 == NULL)
             {
                 std::cerr << "error opening input subdirectory\n";
-                //return -2;
                 break;
             }
             while ((entry2 = readdir(dir2)) != NULL)
@@ -154,7 +153,7 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
             if (dir2 == NULL)
             {
                 std::cerr << "error opening input subdirectory\n";
-                return -2;
+                break;
             }
             //else
             for (int i1 = 0; i1 < megethos; i1++)
@@ -270,91 +269,117 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
         posa_arxeia = 0;
     }
 
+    //perimenw commands
+    char *buf = communicator.createBuffer(); //buf- holds the command now as char*
+    communicator.recv(buf, out_fd);
+    std::cerr << "i am child " << child_pid << " and received " << buf << "\n";
+    communicator.destroyBuffer(buf);
     return 0;
-    //commands
-    std::string com; //command
+/*    while (buf !=NULL)
+    {
+        
 
-    //while (1) { //an den dinei apo file
-    while (std::getline(std::cin, com))
-    { //aposxoliase otan bgaloun output format
-        //std::cout << "Enter desired function:\n";                                     //an den dinei apo file
-        //std::getline(std::cin, com); //std::cin >> com; doesn't work due to spaces    //an den dinei apo file
-        if (com.length() == 0)
-        {
-            continue; //ama m dwseis enter, sunexizw na zhtaw entoles
-        }
+
+        std::string com(buf); //com is the command as std::string
         char *cstr = new char[com.length() + 1]; //auto 8a kanw tokenize
         strcpy(cstr, com.c_str());               //copy as string to line sto cstr
+        //o AGGR elegxei an tha exei dwsei "\n" o user, o worker 8a parei legit entoli
         char *pch;
-        const char delim[2] = " ";
+        const char delim[2] = " "; // \0
         pch = strtok(cstr, delim);
-        std::string comms[8]; //i entoli me ta perissotera orismata einai h insertPatientRecord me d2
+        std::string comms[6]; //i entoli me ta perissotera orismata einai h topk age ranges (6)
         int counter = 0;
         comms[0] = pch;
         //check first word to match with command, check entire command if correct
         if (comms[0] == "/exit")
         {
+            std::cerr << "i am " << child_pid << " and i'm exiting\n";
             //workers -> log files
-            //free memory again as needed
-            delete[] cstr;
-            std::cout << "exiting\n";
+
+            communicator.destroyBuffer(buf);
             return 0;
         }
         else if (comms[0] == "/diseaseFrequency") //8. /diseaseFrequency virusName date1 date2 [country]
-        {
-            //same but make it for each worker in the future
-            while (pch != NULL)
+        {*/
+            /*while (pch != NULL)
             {
                 comms[counter] = pch;
                 counter++;
                 pch = strtok(NULL, delim);
             }
-            std::string virusName = comms[1];
-            std::string wannabedate1 = comms[2];
-            std::string wannabedate2 = comms[3];
-            if ((date_format(wannabedate1) == false) || (date_format(wannabedate2) == false))
+            if (counter==5) //mou edwses onoma xwras
             {
-                //std::cerr << "Type properly.(6)\n";
-                std::cerr << "error\n";
-                break;
-            }
-            //else
-            date d1(wannabedate1);
-            date d2(wannabedate2);
-            if (isLater(d1, d2) == -1) //an d1>d2, epistrefei -1
-            {
-                //std::cerr << "Type properly.(7)\n";
-                std::cerr << "error\n";
-                break;
-            }
-            //else ok
-            block *apantisi = diseaseHT.search(virusName);
-            if (apantisi == NULL) //mou zitas na brw kati pou den exw sti vasi m
-            {
-                //std::cout << "Disease named " << virusName << " has 0 records.\n";"0\n"; //if not exists, return 0
-                //else
-                std::cerr << "error\n";
-            }
-            else                  //to brika
-            {                     //An oxi country orisma, gia kathe country, print posa Virus metaksu twn 2 dates
-                if (counter == 4) //posa virusName krousmata anamesa sto date1 date2
-                {                 //den exw country
-                    std::cout << virusName << " " << apantisi->stats(d1, d2) << "\n";
+                std::string cntrName = comms[4];
+                if (countries.has(cntrName)==false) //den exw auti ti xwra
+                {
+                    //eidiki episimansi oti mhn me laveis uposin AGGR
                 }
-                else if (counter == 5) //exei country
-                {                      //An nai, mono gi auto to country print posa Virus metaksu twn 2 dates
-                    std::string cntrName = comms[4];
+                else //auti einai i xwra m ara leggo
+                {
+                    std::string virusName = comms[1];
+                    std::string wannabedate1 = comms[2];
+                    std::string wannabedate2 = comms[3];
+                    if ((date_format(wannabedate1) == false) || (date_format(wannabedate2) == false))
+                    {
+                        std::cerr << "error\n";
+                        break;
+                    }
+                    //else
+                    date d1(wannabedate1);
+                    date d2(wannabedate2);
+                    if (isLater(d1, d2) == -1) //an d1>d2, epistrefei -1
+                    {
+                        std::cerr << "error\n";
+                        break;
+                    }
+                    //else ok
+                    block *apantisi = diseaseHT.search(virusName);
+                    if (apantisi == NULL) //mou zitas na brw kati pou den exw sti vasi m
+                    {
+                        //std::cerr << "error\n";
+                        //auti einai i xwra mou alla den exw stats ara stelnw 0
+                        std::cout << virusName << " " << 0 << "\n";
+                    }
+                    //else exw apantisi na dwsw
                     std::cout << virusName << " " << apantisi->statsC(d1, d2, cntrName) << "\n";
                 }
-                else //mou edwses alla m nt alla
+            }
+            else if (counter==4)// den exei xwra ara stelnw ta panta
+            {
+                std::string virusName = comms[1];
+                std::string wannabedate1 = comms[2];
+                std::string wannabedate2 = comms[3];
+                if ((date_format(wannabedate1) == false) || (date_format(wannabedate2) == false))
+                {
+                    std::cerr << "error\n";
+                    break;
+                }
+                //else
+                date d1(wannabedate1);
+                date d2(wannabedate2);
+                if (isLater(d1, d2) == -1) //an d1>d2, epistrefei -1
+                {
+                    std::cerr << "error\n";
+                    break;
+                }
+                //else ok
+                block *apantisi = diseaseHT.search(virusName);
+                if (apantisi == NULL) //mou zitas na brw kati pou den exw sti vasi m
                 {
                     std::cerr << "error\n";
                 }
+                //else
+                std::cout << virusName << " " << apantisi->stats(d1, d2) << "\n";
             }
-        }
-        else if (comms[0] == "/topk-Diseases") //10. /topk-Diseases k country [date1 date2]
-        {                                      //Gia to country, which k viruses are top (most krousmata) [between dates if given]
-            //same but make it for each worker in the future
+            else //mou edwses alla m nt alla orismata
+            {
+                std::cerr << "error\n";
+            }
+            */
+        //}
+        //else if (comms[0] == "/topk-Diseases") //10. /topk-Diseases k country [date1 date2]
+        //{
+            /*
             while (pch != NULL)
             {
                 comms[counter] = pch;
@@ -407,18 +432,21 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
                     std::cerr << "error\n";
                 }
             }
-        }
-        else if (comms[0] == "/topk-AgeRanges")
-        {
+            */
+        //}
+        //else if (comms[0] == "/topk-AgeRanges")
+        //{
+            /*
             std::cerr << "I am topk age ranges!\n";
             //age ranges: 0-20, 21-40, 41-60, 60+
             //  /topk-AgeRanges k country disease d1 d2 --> age range & pososta
-        }
-        else if (comms[0] == "/searchPatientRecord")
-        {
+            */
+        //}
+        //else if (comms[0] == "/searchPatientRecord")
+        //{
             //  /searchPatientRecord recordID
 
-            while (pch != NULL) //kovw tin entoli sta parts tis
+            /*while (pch != NULL) //kovw tin entoli sta parts tis
             {
                 comms[counter] = pch;
                 counter++;
@@ -439,15 +467,16 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
 
             //search vasei ID
             //return to record olo printed
-        }
+            */
+        /*}
         else if (comms[0] == "/numPatientAdmissions")
         {
-            std::cerr << "I am num patient admissions!\n";
+            //std::cerr << "I am num patient admissions!\n";
             //  /numPatientAdmissions disease d1 d2 [country]
         }
         else if (comms[0] == "/numPatientDischarges")
         {
-            std::cerr << "I am numPatientDischarges!\n";
+            //std::cerr << "I am numPatientDischarges!\n";
             //  /numPatientDischarges disease d1 d2 [country]
         }
         else
@@ -455,8 +484,7 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
             //std::cerr << "Unknown Command!\n"; //doesn't exit the program, gives the user another chance to type properly this time.
             std::cerr << "error\n";
         }
-        delete[] cstr; //just in case
+        delete[] buf; //just in case
     }                  //end while(1)
-
-    return 0;
+    */
 }
