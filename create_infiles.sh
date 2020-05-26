@@ -16,20 +16,40 @@ if [ $# -ne 5 ];
 then
     echo "Please provide with 5 proper arguements."
     exit -1
-else
-    echo "Total arguments : $#"
+#else
+    #echo "Total arguments : $#"
 fi
+re='^[0-9]+$'
+diseasNum=`wc -l "$1" | cut -f1 -d' '`
+#echo "$diseasNum"
+countrNum=`wc -l "$2" | cut -f1 -d' '`
+#echo "$countrNum"
 
-diseasNum=`wc -l "$1"`
-countrNum=`wc -l "$2"`
+#if [ diseasNum -eq 0 ]
+#then
+#    echo "Please provide with a valid disease file."
+#    exit -1
+#fi
 
-echo $diseasNum #21 diseaseFile.txt
-echo $countrNum #184 countriesFile.txt
+#if [ countrNum -eq 0 ]
+#then
+#    echo "Please provide with a valid country file."
+#    exit -1
+#fi
+
+#check if $4 & $5 are numerical
+
+if ! [[ $4 =~ $re ]] ; then
+    echo "error: Not a number (4)" >&2; exit 1
+fi
+if ! [[ $5 =~ $re ]] ; then
+    echo "error: Not a number (5)" >&2; exit 1
+fi
 
 mkdir -p "$3"
 
 #IDs
-ARRAY=()
+#ARRAY=()
 
 #read files
 FLOOR=1900
@@ -64,20 +84,21 @@ do
         do
             rand=$[ $RANDOM % 2 ]
             id="$(random-string 5)"
-            if [ $rand -eq 0 ] #exoume entry
+            #if [ $rand -eq 0 ] #exoume entry
                 #tuxaio string me arithmous kai noumera - 5 xaraktires
-                while [ [ ${arr[*]} =~ id ] ] #while ID is in array
-                do
-                    id="$(random-string 5)" #generate new id
-                done #while gia elegxo unique ID
-            else #exoume exit ara prepei na uparxei idi to ID
-                while [ ! [ ${arr[*]} =~ id ] ] #while ID is not in array
-                do
-                    id="$(random-string 5)" #generate new id
-                done #while gia elegxo existing ID
-            fi
+                #then
+                #while [[ ${arr[*]} =~ id ]] #while ID is in array
+                #do
+                    #id="$(random-string 5)" #generate new id
+                #done #while gia elegxo unique ID
+            #else #exoume exit ara prepei na uparxei idi to ID
+                #while [[ ! ${arr[*]} =~ id ]] #while ID is not in array
+                #do
+                    #id="$(random-string 5)" #generate new id
+                #done #while gia elegxo existing ID
+            #fi
             
-            ARRAY+=('id') #used IDs get here to we only get unique ones throughout the iterations for all countries
+            #ARRAY+=('id') #used IDs get here to we only get unique ones throughout the iterations for all countries
             #enter i exit:
             arr[0]="ENTER"
             arr[1]="EXIT" #gia na exei exit prepei na uparxei allou enter!!!

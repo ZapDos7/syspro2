@@ -24,7 +24,7 @@ Use:
 - execute "$make script" (doesn't require "$make" beforehand) to execute the script and create the input directory.
 
 Notes:
-- 
+- The script file allowσ for EXIT records that don't correspond to an ENTRY record to exist. In order to produce only proper matches, lines: 52, 85-98 should be un-commented.
 
 Conclusions:
 
