@@ -173,8 +173,8 @@ int main(int argc, char const *argv[])
     //countries.print();
     //std::cerr << "processIds:\n";
     //processIds.print();
-    std::cerr << "triplettes:\n";
-    pid_in_out.print();
+    //std::cerr << "triplettes:\n";
+    //pid_in_out.print();
 
     //std::cerr << countries.size;
 

@@ -25,6 +25,7 @@ System Programming Project #2, Spring 2020
 int main_worker(char *in_dir, int b, string name_out, string name_in)
 {
     int child_pid = getpid();
+    std::cerr << "!!i am child " << child_pid << "\n";
     Communication communicator(b);
     ht my_ht(500 * 10); //arbitrary size
     aht diseaseHT(500 * 10, 1024);
@@ -271,7 +272,12 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
 
     //perimenw commands
     char *buf = communicator.createBuffer(); //buf- holds the command now as char*
-    communicator.recv(buf, out_fd);
+    int checkaro = 0;
+    while (checkaro == 0)
+    {
+        communicator.recv(buf, out_fd);
+        checkaro += strlen(buf);
+    }
     std::cerr << "i am child " << child_pid << " and received " << buf << "\n";
     communicator.destroyBuffer(buf);
     return 0;
