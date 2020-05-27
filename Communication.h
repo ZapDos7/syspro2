@@ -8,8 +8,8 @@
 using namespace std;
 
 //from the book "Unix Programming" by M.J. Rochkind
-ssize_t writeall(int fd, const void *buf, size_t nbyte);
-ssize_t readall(int fd, void *buf, size_t nbyte);
+ssize_t writeall(int fd, const void *buf, ssize_t nbyte);
+ssize_t readall(int fd, void *buf, ssize_t nbyte);
 
 class Communication
 {
@@ -30,3 +30,5 @@ public:
 };
 
 #endif
+
+//read(fd,&message_size,sizeof(int)) -> read message size (piazza)

@@ -3,15 +3,11 @@
 
 #include "Communication.h"
 
-ssize_t writeall(int fd, const void *buf, size_t nbyte)
-{
+ssize_t writeall(int fd, const void *buf, ssize_t nbyte) {
     ssize_t nwritten = 0, n;
 
-    do
-    {
-        if ((n = write(fd, &((const char *)buf)[nwritten],
-                       nbyte - nwritten)) == -1)
-        {
+    do {
+        if ((n = write(fd, &((const char *) buf)[nwritten], nbyte - nwritten)) == -1) {
             if (errno == EINTR)
                 continue;
             else
@@ -19,16 +15,15 @@ ssize_t writeall(int fd, const void *buf, size_t nbyte)
         }
         nwritten += n;
     } while (nwritten < nbyte);
+
     return nwritten;
 }
-ssize_t readall(int fd, void *buf, size_t nbyte)
-{
+
+ssize_t readall(int fd, void *buf, ssize_t nbyte) {
     ssize_t nread = 0, n;
 
-    do
-    {
-        if ((n = read(fd, &((char *)buf)[nread], nbyte - nread)) == -1)
-        {
+    do {
+        if ((n = read(fd, &((char *) buf)[nread], nbyte - nread)) == -1) {
             if (errno == EINTR)
                 continue;
             else
@@ -41,63 +36,50 @@ ssize_t readall(int fd, void *buf, size_t nbyte)
     return nread;
 }
 
-Communication::Communication(int b) : b(b)
-{
+Communication::Communication(int b) : b(b) {
 }
 
-Communication::~Communication()
-{
+Communication::~Communication() {
 }
 
-char *Communication::createBuffer()
-{
+char *Communication::createBuffer() {
     return new char[b]();
 }
 
-void Communication::destroyBuffer(char *buf)
-{
+void Communication::destroyBuffer(char *buf) {
     delete[] buf;
 }
 
-void Communication::put(char *buf, string v)
-{
+void Communication::put(char *buf, string v) {
     strcpy(buf, v.c_str()); //returns "buf" if ok
 }
 
-void Communication::put(char *buf, int v)
-{
+void Communication::put(char *buf, int v) {
     string s = to_string(v);
     put(buf, s);
 }
 
-void Communication::send(char *buf, int fd)
-{
+void Communication::send(char *buf, int fd) {
     //int check = write(fd, buf, b);
     int check = writeall(fd, buf, b);
-    if (check == -1)
-    {
+    if (check == -1) {
         cerr << "errno is " << errno << " ";
         perror("communication::send");
-    }
-    else if (check < b)
-    {
+    } else if (check < b) {
         cerr << "Didn't write enough bytes\n";
         cerr << "errno is " << errno << " ";
         perror("communication::send");
     }
 }
 
-void Communication::recv(char *buf, int fd)
-{
+void Communication::recv(char *buf, int fd) {
     //int check = read(fd, buf, b);
     int check = readall(fd, buf, b);
     if (check == -1) //or if check!=n
     {
         cerr << "errno is " << errno << " ";
         perror("communication::recv");
-    }
-    else if (check < b)
-    {
+    } else if (check < b) {
         cerr << "Didn't read enough bytes\n";
         cerr << "errno is " << errno << " ";
         perror("communication::recv");
