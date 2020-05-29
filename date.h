@@ -4,6 +4,7 @@
 #include <string>
 #include <cstring>
 #include <iostream>
+#include <stddef.h>
 #include <stdlib.h>
 //DD-MM-YYYY
 
@@ -34,4 +35,5 @@ public:
 };
 short int isLater(date d1, date d2); //0 => same date, 1 => d1 later d2, -1 => d2 later d1
 bool isBetween(date d, date d1, date d2);
+
 #endif

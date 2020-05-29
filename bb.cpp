@@ -122,10 +122,6 @@ void block::print_blk_all(bool isCountry)
         if (isCountry == false)
         {
             std::cout << /*"Disease " <<*/ *id << /*" has had " */ " " << count_all << /*" records.\n";*/ "\n";
-            /*if (my_tree != NULL)
-            {
-                my_tree->in_order(my_tree->root);
-            }*/
         }
         else
         {
@@ -145,6 +141,14 @@ long int block::stats(date date1, date date2)
 long int block::statsC(date date1, date date2, std::string cntrn)
 {
     return my_tree->statsCx(my_tree->root, date1, date2, cntrn);
+}
+long int block::statsExit(date date1, date date2)
+{
+    return my_tree->statsExit(my_tree->root, date1, date2);
+}
+long int block::statsExitC(date date1, date date2, std::string cntrn)
+{
+    return my_tree->statsExitC(my_tree->root, date1, date2, cntrn);
 }
 void block::top_k_diseases(int k)
 {
@@ -252,6 +256,23 @@ void block::top_k_countries(int k, date d1, date d2)
     }
     return;
 }
+/*
+void block::top_k_age_ranges(int k, date d1, date d2, std::string countryName , std::string diseaseName)
+{
+    heap swros;
+    int metritis1, metritis2, metritis3, metritis4 = 0; //1 -> 0-20, 2->21-40, 3->41-60, 4->60+
+    this->my_tree->insert_to_heap_diseases_countries_dates(my_tree->root, &swros, d1, d2, countryName, diseaseName);
+    heap_node node;
+    if (swros.size > k)
+    {
+        for (int i = 0; i < k; i++)
+        {
+            swros.pop_root(&node);
+            //if (node.)
+        }
+    }
+    return;
+}*/
 
 /////////////////////////BUCKET//////////////////////
 

@@ -31,13 +31,17 @@ public:
     void update_c_all();
     void update_c_in(bool add); //pairnei ws orisma to false otan BGAINEI kapoios dld stin recordExit blabla
     void print_blk(bool isCountry);
+    //void print_blk(bool isCountry, date d1, date d2);
     void print_blk_all(bool isCountry);
     long int stats(date date1, date date2);
     long int statsC(date date1, date date2, std::string cntrn);
+    long int statsExit(date date1, date date2);
+    long int statsExitC(date date1, date date2, std::string cntrn);
     void top_k_diseases(int k);
     void top_k_diseases(int k, date d1, date d2);
     void top_k_countries(int k);
     void top_k_countries(int k, date d1, date d2);
+    //void top_k_age_ranges(int k, date d1, date d2, std::string countryName, std::string diseaseName);
 };
 
 class bucket

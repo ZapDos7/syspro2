@@ -34,6 +34,7 @@ void ht_item::print_ht_item()
               << this->rec->get_lname() << " "
               << this->rec->get_disease() << " "
               << this->rec->get_country() << " "
+              << this->rec->get_age() << " "
               << this->rec->get_entryDate().get_date_as_string() << " "
               << this->rec->get_exitDate().get_date_as_string() << std::endl;
 }

@@ -5,33 +5,32 @@
 
 using namespace std;
 
-int partition(std::string arr[], int low, int high)
+int partition(std::string arr[], int start, int finish)
 {
-    std::string pivot = arr[high]; // pivot
-    int i = (low - 1);             // Index of smaller element
+    std::string pivot = arr[finish]; // pivot
+    int i = (start - 1);             // pou einai to smallest
 
-    for (int j = low; j <= high - 1; j++)
+    for (int j = start; j < finish; j++)
     {
         date d1(arr[j]);
         date d2(pivot);
-        // If current element is smaller than or equal to pivot
-        if (isLater(d1, d2) > -1)
+        if (isLater(d1, d2) > -1) // If current element is smaller than or equal to pivot
         {
-            i++; // increment index of smaller element
+            i++; // thesi smallest ++
             arr[i].swap(arr[j]);
         }
     }
-    arr[i + 1].swap(arr[high]);
+    arr[i + 1].swap(arr[finish]);
     return (i + 1);
 }
 
-void quickSort(std::string arr[], int low, int high)
+void quickSort(std::string arr[], int start, int finish)
 {
-    if (low < high)
+    if (start < finish)
     {
-        int pi = partition(arr, low, high); //partitioning index, to pi einai sti swsti thesi tou tr
+        int ok = partition(arr, start, finish); // to ok einai stin thesi tou
         //kanw quisort gia ta prin kai gia ta meta xwria
-        quickSort(arr, low, pi - 1);
-        quickSort(arr, pi + 1, high);
+        quickSort(arr, start, ok - 1);
+        quickSort(arr, ok + 1, finish);
     }
 }

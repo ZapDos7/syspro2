@@ -147,6 +147,42 @@ long int tree::statsCx(tree_node *tr, date d1, date d2, std::string countryName)
     metritis += statsCx(tr->right, d1, d2, countryName);
     return metritis;
 }
+
+long int tree::statsExit(tree_node *tr, date d1, date d2) //idia me stats alla vasei exit date
+{
+    long int metritis = 0;
+    if (tr == NULL) //recursion end
+    {
+        return metritis;
+    }
+    metritis += stats(tr->left, d1, d2);
+    //if (isBetween(*(tr->d), d1, d2) == true)
+    if (isBetween(*(tr->rec->get_exitDatePtr()), d1, d2) == true)
+    {
+        metritis++;
+    }
+    metritis += stats(tr->right, d1, d2);
+    return metritis;
+}
+long int tree::statsExitC(tree_node *tr, date d1, date d2, std::string countryName) //idia me exit alla & vasei country
+{
+    long int metritis = 0;
+    if (tr == NULL) //recursion end
+    {
+        return metritis;
+    }
+    metritis += statsCx(tr->left, d1, d2, countryName);
+    if (isBetween(*(tr->rec->get_exitDatePtr()), d1, d2) == true)
+    {
+        if (tr->rec->get_country() == countryName)
+        {
+            metritis++;
+        }
+    }
+    metritis += statsCx(tr->right, d1, d2, countryName);
+    return metritis;
+}
+
 void tree::insert_to_heap_diseases(tree_node *tr, heap *swros)
 {
     if (tr == NULL)
@@ -184,4 +220,16 @@ void tree::insert_to_heap_countries_dates(tree_node *tr, heap *swros, date d1, d
         swros->insert(tr->rec->get_country());
     }
     insert_to_heap_countries_dates(tr->right, swros, d1, d2);
+}
+
+void insert_to_heap_diseases_countries_dates(tree_node *tr, heap *swros, date d1, date d2, std::string countryName, std::string diseaseName)
+{
+    if (tr == NULL)
+        return;
+    insert_to_heap_diseases_countries_dates(tr->left, swros, d1, d2, countryName, diseaseName);
+    if ((isBetween(*(tr->d), d1, d2) == true)&&(tr->rec->get_country()==countryName)&&(tr->rec->get_disease()==diseaseName))
+    {
+        swros->insert(tr->rec->get_country());
+    }
+    insert_to_heap_diseases_countries_dates(tr->right, swros, d1, d2, countryName, diseaseName);
 }

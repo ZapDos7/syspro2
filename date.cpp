@@ -9,6 +9,7 @@ date::date(string str)
     if (str == "-")
     {
         this->set = false;
+        this->day = this->month = this->year = -1;
     }
     else
     {
@@ -33,6 +34,7 @@ date::date(string str)
         if (atoi(parts[2]) < 0)
         {
             //cout << "Before Christ.\n";
+            exit(-1);
         }
         else
         {
@@ -65,9 +67,11 @@ date::date(string str)
 
 date::date(date &d) //copy constructor, kaleitai ws: date d1 = d2;
 {
-    if (d.get_date_as_string() == "-")
+    //if (d.get_date_as_string() == "-")
+    if (d.set==false)
     {
         this->set = false;
+        this->day = this->month = this->year = -1;
     }
     else
     {
@@ -76,21 +80,23 @@ date::date(date &d) //copy constructor, kaleitai ws: date d1 = d2;
             //fprintf(stderr, "Invalid month\n");
             exit(1);
         }
-        if ((d.day < 0) || (d.day > 31))
+        //if ((d.day < 0) || (d.day > 31))
+        if ((d.day < 0) || (d.day > 30)) //fixed gia ergasia 2
         {
             //fprintf(stderr, "Invalid day\n");
             exit(1);
         }
-        if ((d.month == 2) && (d.year % 4 == 0) && (d.day > 29))
+        /*if ((d.month == 2) && (d.year % 4 == 0) && (d.day > 29))
         { //leap yeared feb
             //fprintf(stderr, "Invalid date format\n");
             exit(1);
         }
+        //also fixed gia ergasia 2
         if (((d.month == 4) || (d.month == 6) || (d.month == 9) || (d.month == 11)) && (d.day > 30))
         { //30 day-d months
             //fprintf(stderr, "Invalid date format\n");
             exit(1);
-        }
+        }*/
         this->day = d.day;
         this->month = d.month;
         this->year = d.year;

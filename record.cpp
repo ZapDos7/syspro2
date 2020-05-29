@@ -26,7 +26,7 @@ record::record(string line) //thewrw oti dineis sxetika swsto record kai xeirizo
         pch = strtok(NULL, delim);
     }
     //std::cerr << counter << "\n";
-    for (unsigned int i = 0; i < 8; i++)
+    for (unsigned int i = 0; i < counter; i++)
     {
         string tmp(parts[i]);
         //std::cerr << tmp << '\n';
