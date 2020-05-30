@@ -91,7 +91,7 @@ int main(int argc, char const *argv[])
     { //he normal, successful return value from mkfifo is 0 . In the case of an error, -1 is returned.
         string name_in = to_string(i) + "_in.fifo";
 
-        //unlink(name_in.c_str());
+        unlink(name_in.c_str());
         int test = mkfifo(name_in.c_str(), 0644);
         if (test == -1)
         {
@@ -101,7 +101,7 @@ int main(int argc, char const *argv[])
 
         string name_out = to_string(i) + "_out.fifo";
 
-        //unlink(name_out.c_str());
+        unlink(name_out.c_str());
         test = mkfifo(name_out.c_str(), 0644);
         if (test == -1)
         {
@@ -132,7 +132,7 @@ int main(int argc, char const *argv[])
             return main_worker(in_dir, b, names_out.items[i].c_str(), names_in.items[i].c_str());
         }
         else //gonios
-        {
+        {    //krataw ta pIDs twn paidiwn m
             processIds.insert(child_pid);
             Triplette t(child_pid);
             pid_in_out.insert(t);
@@ -178,7 +178,6 @@ int main(int argc, char const *argv[])
     //processIds.print();
     //pid_in_out.print();
 
-    
     for (int i = 0; i < w; i++)
     {
         char *buf = communicator.createBuffer();
@@ -190,11 +189,6 @@ int main(int argc, char const *argv[])
     for (int i = 0; i < w; i++)
     {
         char *buf = communicator.createBuffer();
-        /*while (buf!=NULL)
-        {
-            communicator.recv(buf, pid_in_out.items[i].in);
-        }*/
-        
         communicator.recv(buf, pid_in_out.items[i].in);
 
         fprintf(stderr, "Elava apo to worker %d to minima: '%s' \n", pid_in_out.items[i].pid, buf);
@@ -207,7 +201,6 @@ int main(int argc, char const *argv[])
         communicator.destroyBuffer(buf);
     }
 
-
     long int total = 0;
     long int success = 0;
     long int failed = 0;
@@ -215,21 +208,22 @@ int main(int argc, char const *argv[])
     //commands
     std::string com; //command
     //anagnosi tis apo ton aggr (pipe)
+    //return 0;
     while (printf("?") && std::getline(std::cin, com))
     { //to "?" einai prompt gia ton user
         if (com.length() == 0)
         {
-            continue; //ama m dwseis sketo enter, sunexizw na zhtaw entoles
+            continue; //ama m dwseis enter, sunexizw na zhtaw entoles
         }
         char *cstr = new char[com.length() + 1]; //auto 8a kanw tokenize
+        strcpy(cstr, com.c_str());               //copy as string to line sto cstr
         total++;
-        strcpy(cstr, com.c_str()); //copy as string to line sto cstr
         char *pch;
         const char delim[2] = " ";
         pch = strtok(cstr, delim);
         std::string comms[8]; //i entoli me ta perissotera orismata einai h insertPatientRecord me d2
         int counter = 0;
-        comms[counter] = pch;
+        comms[0] = pch;
         //check first word to match with command, check entire command if correct
         if (comms[0] == "/listCountries") // /listCountries --> for each country print PID of corresponding worker
         {
@@ -249,7 +243,6 @@ int main(int argc, char const *argv[])
 
             //free memory again as needed
             delete[] cstr;
-
             ofstream logfile;
             std::string onomaarxeiou = "log_file.";
             onomaarxeiou += to_string(getpid());
@@ -262,95 +255,51 @@ int main(int argc, char const *argv[])
             logfile << "SUCCESS: " << success << "\n"; //posa success
             logfile << "FAIL: " << failed << "\n";     //posa fail
             logfile.close();
-
             std::cout << "parent exiting\n";
             break;
         }
         else if (comms[0] == "/diseaseFrequency") //8. /diseaseFrequency virusName date1 date2 [country]
         {
-            //fprintf(stderr, "%s", com.c_str());
             while (pch != NULL) //kovw tin entoli sta parts tis
             {
-                //std::cerr << pch << "\t";
                 comms[counter] = pch;
                 counter++;
                 pch = strtok(NULL, delim);
             }
-            //std::cerr << "counter is " << counter << "\n";
-            if ((counter > 5) || (counter < 4))
-            {
-                std::cerr << "counter isn't 5 or 4\n";
+            if ((counter > 5) || (counter < 4)){
+                std::cerr << "error\n";
                 failed++;
-            }
+                }
             else if (counter == 5) //exw xwra ara paw se auti ti xwra --> se auto to process na kanw tin entoli
             {
                 //find se poio worker einai auti i xwra
                 for (int i = 0; i < countries.size; i++) //gia kathe xwra
                 {
-                    //fprintf(stderr, "O gonios psaxnei to %s ston %d.\n", comms[4].c_str(), countries.items[i].pid );
                     if (countries.items[i].country == comms[4]) //an eisai auti pou psaxnw
                     {
                         //send to worker
-                        //std::cerr << "I xwra " <<comms[4] << " einai tou " << countries.items[i].pid << "\n";
-
                         char *minima = new char[com.length() + 1];
-                        strcpy(minima, com.c_str());
-                        //fprintf(stderr, "\'%s\'\n", minima);
-
-                        char *buf = communicator.createBuffer();
-                        communicator.put(buf, minima);
-                        communicator.send(buf, countries.items[i].out);
-                        communicator.destroyBuffer(buf);
-                        //o,ti lavw to tupwnw apo 1 worker
-                        //fail or success++;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-                for (int i = 0; i < countries.size; i++) //gia kathe xwra
-                {
-                    //fprintf(stderr, "O gonios psaxnei to %s ston %d.\n", comms[4].c_str(), countries.items[i].pid );
-                    if (countries.items[i].country == comms[4]) //an eisai auti pou psaxnw
-                    {
-                        char *bufreply = communicator.createBuffer();
-                        communicator.recv(bufreply, pid_in_out.items[i].in);
-
-                        fprintf(stderr, "Elava apo to worker %d to minima: '%s' \n", pid_in_out.items[i].pid, bufreply);
-                        fprintf(stdout, "%s\n", bufreply);
-                        communicator.destroyBuffer(bufreply);
-                        //fail or success++;
-                    }
-                    else
-                    {
-                        //fprintf(stderr,"I xwra %s den einai tou %d.\n", comms[4].c_str(), countries.items[i].pid);
-                        continue;
+                        strcpy(minima, com.c_str());                    //eidallws nmzei oti to com.c_str() einai const char *
+                        char *buf = communicator.createBuffer();        //ftiaxnw ton buffer gia na steilw to mnm
+                        communicator.put(buf, minima);                  //vazw to minima sto buf
+                        communicator.send(buf, countries.items[i].out); //to kanw send ara write
+                        communicator.destroyBuffer(buf);                //yeet
+                        //o,ti lavw to tupwnw
                     }
                 }
             }
             else //if (counter==4) //ara den exw xwra ara ti zitaw apo olous
             {
-                for (int i = 0; i < w; i++) //gia kathe xwra
+                for (int i = 0; i < countries.size; i++) //gia kathe xwra
                 {
-                    char *minima = new char[com.size() + 1];
-                    strcpy(minima, com.c_str());                     //eidallws nmzei oti to com.c_str() einai const char *
-                    char *buf = communicator.createBuffer();         //ftiaxnw ton buffer gia na steilw to mnm
-                    communicator.put(buf, minima);                   //vazw to minima sto buf
-                    communicator.send(buf, pid_in_out.items[i].out); //to kanw send ara write
-                    communicator.destroyBuffer(buf);                 //yeet
-                    //o,ti lavw to tupwnw - polloi workers
-                    //fail or success++;
-                }
-                for (int i = 0; i < w; i++)
-                {
-                    char *buf = communicator.createBuffer();
-                    communicator.recv(buf, pid_in_out.items[i].in);
+                    char *minima = new char[com.length() + 1];
+                    strcpy(minima, com.c_str());                    //eidallws nmzei oti to com.c_str() einai const char *
+                    char *buf = communicator.createBuffer();        //ftiaxnw ton buffer gia na steilw to mnm
+                    communicator.put(buf, minima);                  //vazw to minima sto buf
+                    communicator.send(buf, countries.items[i].out); //to kanw send ara write
+                    communicator.destroyBuffer(buf);                //yeet
 
-                    fprintf(stderr, "Elava apo to worker %d to minima: '%s' \n", pid_in_out.items[i].pid, buf);
-
-                    communicator.destroyBuffer(buf);
-                    //fail or success++;
+                    //twra tupwnw oti m poun oi workers
                 }
             }
         }
@@ -373,19 +322,18 @@ int main(int argc, char const *argv[])
                 {
                     //send to worker
                     std::cerr << comms[4] << "\n";
-                    char *minima = new char[com.size() + 1];
+                    char *minima = new char[com.length() + 1];
                     strcpy(minima, com.c_str());                    //eidallws nmzei oti to com.c_str() einai const char *
                     char *buf = communicator.createBuffer();        //ftiaxnw ton buffer gia na steilw to mnm
                     communicator.put(buf, minima);                  //vazw to minima sto buf
                     communicator.send(buf, countries.items[i].out); //to kanw send ara write
                     communicator.destroyBuffer(buf);                //yeet
-                    //o,ti lavw to tupwnw
-                    //fail or success++;
-                }
-                //an ftasw na mou zhtaei xwra pou den exw ti kanw?
+
+                    //o,ti mou pei o worker einai i apantisi
+                } //else continue
             }
         }
-        else if (comms[0] == "/searchPatientRecord") //mporei na einai idio ID se >1 xwres ara print all these
+        else if (comms[0] == "/searchPatientRecord")
         {
             for (int i = 0; i < w; i++) //send se olous
             {
@@ -502,8 +450,8 @@ int main(int argc, char const *argv[])
         }
         else
         {
+            //std::cerr << "Unknown Command!\n"; //doesn't exit the program, gives the user another chance to type properly this time.
             std::cerr << "error\n";
-            failed++;
         }
         delete[] cstr; //just in case
     }                  //end while(1)

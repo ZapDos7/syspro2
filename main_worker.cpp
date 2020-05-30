@@ -79,15 +79,12 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
             char path[1024];
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
                 continue; //skip ., ..
-            //fprintf(stderr, "o %d psaxnei to %s.\n", child_pid, entry->d_name);
-            //std::cerr << entry->d_name << " " << child_pid << "\n";
-            //if (countries.has(entry->d_name) == false) //an to entry->d_name einai mesa sto countries m, ta kanw auta else skip
-            //break;
-            //else //einai diki m xwra ara paw na tin xeiristw
-            if (countries.has(entry->d_name) == true)
+            //fprintf(stderr, "%s by %d\n", entry->d_name, child_pid); //std::cerr << entry->d_name << " " << child_pid << "\n";
+            if (countries.has(entry->d_name) == false) //an to entry->d_name einai mesa sto countries m, ta kanw auta else skip
+                break;
+            else //einai diki m xwra ara paw na tin xeiristw
             {
                 //fprintf(stderr, "o %d brike to to %s.\n", child_pid, entry->d_name);
-                //std::cerr << entry->d_name << " einai tou " << child_pid << "\n";
                 snprintf(path, sizeof(path), "%s/%s", in_dir, entry->d_name); //path = "../folder2/Xwra"
                 dir2 = opendir(path);
                 if (dir2 == NULL)
@@ -109,9 +106,8 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
                     }
                 }
                 closedir(dir2);
-                std::string *date_file_names = new string[posa_arxeia];
-
-                dir2 = opendir(path); //twra ksananoigw gia na valw ta file names edw mesa
+                std::string *date_file_names = new string[posa_arxeia]; //std::string date_file_names[posa_arxeia];
+                dir2 = opendir(path);                                   //twra ksananoigw gia na valw ta file names edw mesa
                 if (dir2 == NULL)
                 {
                     std::cerr << "error opening input subdirectory\n";
@@ -129,157 +125,145 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
                     else
                     {
                         std::string entryname(entry2->d_name);
-                        date_file_names[i] = entryname; //vazw to entry2->d_name sto array
-                        //fprintf(stderr, "%s\t", entryname.c_str());
+                        date_file_names[i] = entryname;
                         i++;
                     }
                 }
                 closedir(dir2);
 
-                //sort ta pramata mes to array // i = megethos tou array
-                quickSort(date_file_names, 0, i - 1);
-
-                //for (unsigned int i1 = 0; i1 < i; i1++)
-                //{
-                //    fprintf(stderr, "%s\t", date_file_names[i1].c_str());
-                //}
-
+                //sort ta pramata mes to array
+                int megethos = sizeof(date_file_names) / sizeof(date_file_names[0]); //posa exei mesa to array
+                quickSort(date_file_names, 0, megethos - 1);
                 //std::cerr << path << "\n"; // /dir/Xwra
                 dir2 = opendir(path);
                 if (dir2 == NULL)
                 {
-                    fprintf(stderr, "error opening in_dir/%s (child %d)\n", entry->d_name, child_pid);
+                    std::cerr << "error opening input subdirectory\n";
                     break;
                 }
-                else
+                //else
+                for (int i1 = 0; i1 < megethos; i1++)
                 {
-                    for (unsigned int i1 = 0; i1 < i; i1++)
+                    //std::cerr << date_file_names[i1] << '\t';
+                    std::string path2 = path;
+                    path2 += '/';
+                    path2 += date_file_names[i1];
+                    //std::cerr << path2 << "\n\n";  // /dir/Xwra/XX-YY-ZZZZ
+                    dataset.open(path2);
+                    if (dataset.is_open() == 0)
+                        std::cerr << "error\n";
+                    else //we gonna do the thingggg
                     {
-                        //std::cerr << date_file_names[i1] << '\t';
-                        std::string path2;
-                        path2 = path;
-                        path2 += '/';
-                        path2 += date_file_names[i1];
-                        //std::cerr << path2 << "\n\n"; // /dir/Xwra/XX-YY-ZZZZ
-                        dataset.open(path2);
-                        if (dataset.is_open() == 0)
-                            std::cerr << "error\n";
-                        else //we gonna do the thingggg
+                        std::string line;
+                        while (std::getline(dataset, line)) //diavazei olo to this date --> we gotta do it for all files in this folder
                         {
-                            std::string line;
-                            //fprintf(stderr, "\b %s \n", line.c_str());
-                            while (std::getline(dataset, line)) //diavazei olo to this date --> we gotta do it for all files in this folder
+                            //line read: ID ENTER fn ln disease age
+                            //constructor gia record: ID FName Lname DIsease Country age entryD exitD/-
+                            //std::cerr << "paw na valw " << line <<"\n";
+                            std::string wannabe = "";
+                            std::string help[6]; //boithitiki domi me ta tokens tou line pou 8a ftiaksw swsta
+                            int counter = 0;
+                            const char *c_string = line.c_str();
+                            char *token = strtok((char *)c_string, " ");
+                            while (token)
                             {
-                                //line read: ID ENTER fn ln disease age
-                                //constructor gia record: ID FName Lname DIsease Country age entryD exitD/-
-                                //std::cerr << "paw na valw " << line <<"\n";
-                                std::string wannabe = "";
-                                std::string help[6]; //boithitiki domi me ta tokens tou line pou 8a ftiaksw swsta
-                                int counter = 0;
-                                const char *c_string = line.c_str();
-                                char *token = strtok((char *)c_string, " ");
-                                while (token)
+                                //std::cerr << token << '\n';
+                                help[counter] = token;
+                                token = strtok(NULL, " ");
+                                counter++;
+                            }
+                            wannabe += help[0]; //wannabe="ID"
+                            wannabe += " ";
+                            wannabe += help[2]; //wannabe="ID Fname"
+                            wannabe += " ";
+                            wannabe += help[3]; //wannabe="ID Fname Lname"
+                            wannabe += " ";
+                            wannabe += help[4]; //wannabe="ID Fname Lname Disease"
+                            wannabe += " ";
+                            wannabe += entry->d_name; //wannabe="ID Fname Lname Disease Country"
+                            wannabe += " ";
+                            wannabe += help[5]; //wannabe="ID Fname Lname Disease Country Age"
+                            wannabe += " ";
+                            if (help[1] == "ENTER") //exoume eisodo
+                            {
+                                wannabe += date_file_names[i1];
+                                record temp_r(wannabe);                  //temp record gia insert
+                                record *elegxos = my_ht.insert(&temp_r); //edw ginetai kai elegxos gia unique IDs
+                                if (elegxos == NULL)
                                 {
-                                    //std::cerr << token << '\n';
-                                    help[counter] = token;
-                                    token = strtok(NULL, " ");
-                                    counter++;
+                                    std::cerr << "den evala to " << elegxos->get_id() << "\n";
+                                    break; //sto piazza eipw8ike oti an brethei kapoio ID duplicate, na proxwrame stis entoles & na mhn sunexizoun ta insertions.
                                 }
-                                wannabe += help[0]; //wannabe="ID"
-                                wannabe += " ";
-                                wannabe += help[2]; //wannabe="ID Fname"
-                                wannabe += " ";
-                                wannabe += help[3]; //wannabe="ID Fname Lname"
-                                wannabe += " ";
-                                wannabe += help[4]; //wannabe="ID Fname Lname Disease"
-                                wannabe += " ";
-                                wannabe += entry->d_name; //wannabe="ID Fname Lname Disease Country"
-                                wannabe += " ";
-                                wannabe += help[5]; //wannabe="ID Fname Lname Disease Country Age"
-                                wannabe += " ";
-                                //fprintf(stderr, "paw na dw an einai enter i exit to %s\n", wannabe.c_str());
-                                if (help[1] == "ENTER") //exoume eisodo
+                                else
                                 {
-                                    wannabe += date_file_names[i1];
-                                    record temp_r(wannabe); //temp record gia insert
-                                    //std::cerr << "paw na balw to ";
-                                    //temp_r.print_record();
-                                    record *elegxos = my_ht.insert(&temp_r); //edw ginetai kai elegxos gia unique IDs
-                                    if (elegxos == NULL)
-                                    {
-                                        std::cerr << "den evala to " << elegxos->get_id() << "\n";
-                                        break; //sto piazza eipw8ike oti an brethei kapoio ID duplicate, na proxwrame stis entoles & na mhn sunexizoun ta insertions.
-                                    }
-                                    else
-                                    {
-                                        //fprintf(stderr, "Eimai o %d kai evala to %s\n", child_pid, elegxos->get_id().c_str());
-                                        //std::cerr << "Eimai o " << child_pid << " & evala to " << elegxos->get_id() << "\n";
-                                        diseaseHT.ainsert(elegxos, false);
-                                        countryHT.ainsert(elegxos, true);
-                                    }
+                                    //std::cerr << "Eimai o " << child_pid << " & evala to " << elegxos->get_id() << "\n";
+                                    diseaseHT.ainsert(elegxos, false);
+                                    countryHT.ainsert(elegxos, true);
                                 }
-                                else if (help[1] == "EXIT")
+                            }
+                            else if (help[1] == "EXIT")
+                            {
+                                ht_item *h = my_ht.search(help[0]); //bres an uparxei to record me auto to ID
+                                if (h == NULL)
+                                    continue; //oops this record doesn't exist, akuro, bye
+                                else
                                 {
-                                    ht_item *h = my_ht.search(help[0]); //bres an uparxei to record me auto to ID
-                                    if (h == NULL)
-                                        continue; //oops this record doesn't exist, akuro, bye
-                                    else
+                                    date d2(string(entry->d_name));         //d2 = ti paw na valw
+                                    date *d1 = h->rec->get_exitDatePtr();   //to uparxon exit date
+                                    bool magkas = d1->set;                  //ama eixa prin set=true ara eixa idi exit date, true, else false
+                                    date *din = h->rec->get_entryDatePtr(); //to entry date
+                                    if (isLater(d2, *din) == 1)             //pas na mou baleis kati pou den einai later tou entry date m
                                     {
-                                        //h->print_ht_item();
-                                        date d2(string(entry->d_name));         //d2 = ti paw na valw
-                                        date *d1 = h->rec->get_exitDatePtr();   //to uparxon exit date
-                                        bool magkas = d1->set;                  //ama eixa prin set=true ara eixa idi exit date, true, else false
-                                        date *din = h->rec->get_entryDatePtr(); //to entry date
-                                        if (isLater(d2, *din) == 1)             //pas na mou baleis kati pou den einai later tou entry date m
+                                        std::cerr << "error\n";
+                                    }
+                                    else //valid basei entry date
+                                    {
+                                        h->rec->set_exitD(d2.get_date_as_string()); //twra exei exit date
+                                        if (magkas == false)                        //prin den imoun set ara update counters:
                                         {
-                                            std::cerr << "error\n";
-                                        }
-                                        else //valid basei entry date
-                                        {
-                                            h->rec->set_exitD(d2.get_date_as_string()); //twra exei exit date
-                                            if (magkas == false)                        //prin den imoun set ara update counters:
+                                            block *blokaki1 = diseaseHT.search(entry->d_name);
+                                            if (blokaki1 != NULL)
                                             {
-                                                block *blokaki1 = diseaseHT.search(entry->d_name);
-                                                if (blokaki1 != NULL)
-                                                {
-                                                    blokaki1->update_c_in(false);
-                                                }
-                                                block *blokaki2 = countryHT.search(entry->d_name);
-                                                if (blokaki2 != NULL)
-                                                {
-                                                    blokaki2->update_c_in(false);
-                                                }
+                                                blokaki1->update_c_in(false);
                                             }
-                                            //eidallws oi metrites den allazoun!
+                                            block *blokaki2 = countryHT.search(entry->d_name);
+                                            if (blokaki2 != NULL)
+                                            {
+                                                blokaki2->update_c_in(false);
+                                            }
                                         }
+                                        //eidallws oi metrites den allazoun!
                                     }
                                 }
                             }
-                            dataset.close();
-                        } //diavase to epomeno arxeio tr
-                    }     //end for gia chronological
-                }
+                        }
+                        dataset.close();
+                    } //diavase to epomeno arxeio tr
+                }     //end for gia chronological
                 closedir(dir2);
             }
         }
         posa_arxeia = 0; //epanamhdenizw ton arithmo arxeiwn giati paw se alli xwra
     }
-    
+
     char *buf = communicator.createBuffer();
     communicator.recv(buf, out_fd);
+
     fprintf(stderr, "Eimai o worker %d kai perimeno to xairetismo !!! \n", child_pid);
+
     if (string(buf) == "hi\n")
     {
-        fprintf(stderr, "Eimai o worker %d kai elava to hi !!! \n", child_pid);
+        fprintf(stderr, "Eimai o worker %d kai elava to minima !!! \n", child_pid);
     }
     else
     {
-        fprintf(stderr, "Eimai o worker %d kai den elava to hi !!! \n", child_pid);
+        std::cerr << " eimai o " << child_pid << " kai den elava to hi !!!!!";
         exit(0);
     }
-    communicator.put(buf, "yo");
-    communicator.send(buf, in_fd);
 
+    communicator.put(buf, "yo");
+
+    communicator.send(buf, in_fd);
 
     long int total = 0;
     long int success = 0;
@@ -289,6 +273,16 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
     {
         char *buf = communicator.createBuffer();
         communicator.recv(buf, out_fd);
+
+        if (string(buf) == "/exit")
+        {
+            std::cerr << " elava /exit " << child_pid << '\n';
+        }
+        else if (string(buf) == "message\n")
+        {
+            std::cerr << " eimai o " << child_pid << " kai elava to message";
+        }
+
         std::string com(buf); //com is the command as std::string
         total++;
         fprintf(stderr, "o %d elave to %s", child_pid, com.c_str());

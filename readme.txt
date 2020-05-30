@@ -26,7 +26,10 @@ Use:
 Notes:
 - The script file allowσ for EXIT records that don't correspond to an ENTRY record to exist. In order to produce only proper matches, lines: 52, 85-98 should be un-commented.
 
-Conclusions:
+Communication Protocol:
+- The "Communication" class handles the writing and reading on the pipes. It creates a buffer, on which processes can write, and sends the message through the pipe, until another process reads it.
+- When the parent process (main_aggregator) sends the countries to each worker, when the latter receive "BYE" they realise it's time to stop reading from the pipe.
+- When any worker sends "IDK" to the parent, it means that the command yields no result (a failed execution).
 
 Sources:
 - class' notes

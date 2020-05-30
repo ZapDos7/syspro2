@@ -1,12 +1,12 @@
 CC=g++ -std=c++11
-CFLAGS=-c -Wpedantic -Ofast -Wall
+CFLAGS=-c -Wpedantic -Ofast -Wall  -ggdb3
 SCRIPT = create_infiles.sh
 SOURCES=main_aggregator.cpp main_worker.cpp date.cpp record.cpp ht.cpp aht.cpp bb.cpp tree.cpp heap.cpp Communication.cpp Pair.cpp PairArray.cpp PidArray.cpp quicksort.cpp StringArray.cpp Triplette.cpp TripleArray.cpp date_format.cpp 
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=diseaseAggregator
 ARGS= -w 3 -b 4096 -i ../input_dir
 #-w -> number of workers, -b -> buffersize for pipes, -i -> input directory
-VAL=valgrind --leak-check=full
+VAL=valgrind --leak-check=full #-s 
 
 
 all: $(SOURCES) $(EXECUTABLE)
