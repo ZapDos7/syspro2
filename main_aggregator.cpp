@@ -227,10 +227,12 @@ int main(int argc, char const *argv[])
         //check first word to match with command, check entire command if correct
         if (comms[0] == "/listCountries") // /listCountries --> for each country print PID of corresponding worker
         {
+            success++;
             countries.print_lc(); //den xreiazetai epikoinwnia me workers giati exw "skonaki" ti domi countries
         }
         else if (comms[0] == "/exit")
         {
+            success++;
             //workers -> log files ara to stelnw se olous na kanoun douleia tous
             for (int i = 0; i < countries.size; i++)
             {
@@ -266,10 +268,11 @@ int main(int argc, char const *argv[])
                 counter++;
                 pch = strtok(NULL, delim);
             }
-            if ((counter > 5) || (counter < 4)){
+            if ((counter > 5) || (counter < 4))
+            {
                 std::cerr << "error\n";
                 failed++;
-                }
+            }
             else if (counter == 5) //exw xwra ara paw se auti ti xwra --> se auto to process na kanw tin entoli
             {
                 //find se poio worker einai auti i xwra
@@ -450,6 +453,7 @@ int main(int argc, char const *argv[])
         }
         else
         {
+            failed++;
             //std::cerr << "Unknown Command!\n"; //doesn't exit the program, gives the user another chance to type properly this time.
             std::cerr << "error\n";
         }

@@ -274,18 +274,18 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
         char *buf = communicator.createBuffer();
         communicator.recv(buf, out_fd);
 
-        if (string(buf) == "/exit")
+        /*if (string(buf) == "/exit")
         {
             std::cerr << " elava /exit " << child_pid << '\n';
         }
         else if (string(buf) == "message\n")
         {
             std::cerr << " eimai o " << child_pid << " kai elava to message";
-        }
+        }*/
 
         std::string com(buf); //com is the command as std::string
         total++;
-        fprintf(stderr, "o %d elave to %s", child_pid, com.c_str());
+        //fprintf(stderr, "o %d elave to %s", child_pid, com.c_str());
         communicator.destroyBuffer(buf);
 
         char *cstr = new char[com.length() + 1]; //auto 8a kanw tokenize
@@ -300,7 +300,7 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
         //check first word to match with command, check entire command if correct
         if (comms[0] == "/exit")
         {
-            std::cerr << "i am " << child_pid << " and i'm exiting\n";
+            fprintf(stderr, "Child %d is exiting\n", child_pid);
             //workers -> log files
             ofstream logfile;
             std::string onomaarxeiou = "log_file.";
@@ -500,7 +500,9 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
                 ht_item *anazitisis = my_ht.search(comms[counter - 1]);
                 if (anazitisis == NULL)
                 {
-                    std::cerr << "error2\n";
+                    char *buf = communicator.createBuffer();
+                    communicator.put(buf, "IDK");
+                    communicator.send(buf, in_fd);
                     failed++;
                 }
                 else
