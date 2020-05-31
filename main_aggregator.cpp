@@ -51,7 +51,7 @@ int main(int argc, char const *argv[])
     }
     if ((w < 0) || (b < 0))
     {
-        fprintf(stderr, "error\n");
+        std::cerr << "error\n";
         exit(-1);
     }
 
@@ -66,7 +66,7 @@ int main(int argc, char const *argv[])
     dir = opendir(in_dir);
     if (dir == NULL)
     {
-        fprintf(stderr, "error opening in_dir\n");
+        std::cerr << "error opening input directory\n";
         exit(-1);
     }
     //else
@@ -122,10 +122,10 @@ int main(int argc, char const *argv[])
             perror(" Failed to fork");
             exit(1);
         }
-
         if (child_pid == 0)
         { //paidi
             // call worker main
+
             child_pid = getpid();
             //cout << "child started with PID " << child_pid << endl;
             //kalw ti main tou paidiou
@@ -174,9 +174,10 @@ int main(int argc, char const *argv[])
     //elegxos
     //names_in.print();
     //names_out.print();
-    //countries.print();
+    //countries.print_lc();
     //processIds.print();
     //pid_in_out.print();
+    //return 0;
 
     for (int i = 0; i < w; i++)
     {
@@ -191,15 +192,17 @@ int main(int argc, char const *argv[])
         char *buf = communicator.createBuffer();
         communicator.recv(buf, pid_in_out.items[i].in);
 
-        fprintf(stderr, "Elava apo to worker %d to minima: '%s' \n", pid_in_out.items[i].pid, buf);
+        fprintf(stderr, "Elava apo to worker %d to minima: '%s' \n", i, buf);
 
         if (string(buf) != "yo")
         {
-            fprintf(stderr, "Lathos sti xeirapsia me to worker %d to minima: \'%s\' \n", i, buf);
+            fprintf(stderr, "Lathos sti xeirapsia me to worker %d to minima: %s \n", i, buf);
             exit(1);
         }
         communicator.destroyBuffer(buf);
     }
+
+    //    return 0;
 
     long int total = 0;
     long int success = 0;
@@ -208,7 +211,7 @@ int main(int argc, char const *argv[])
     //commands
     std::string com; //command
     //anagnosi tis apo ton aggr (pipe)
-    //return 0;
+
     while (printf("?") && std::getline(std::cin, com))
     { //to "?" einai prompt gia ton user
         if (com.length() == 0)
@@ -217,7 +220,6 @@ int main(int argc, char const *argv[])
         }
         char *cstr = new char[com.length() + 1]; //auto 8a kanw tokenize
         strcpy(cstr, com.c_str());               //copy as string to line sto cstr
-        total++;
         char *pch;
         const char delim[2] = " ";
         pch = strtok(cstr, delim);
@@ -225,6 +227,7 @@ int main(int argc, char const *argv[])
         int counter = 0;
         comms[0] = pch;
         //check first word to match with command, check entire command if correct
+        total++;
         if (comms[0] == "/listCountries") // /listCountries --> for each country print PID of corresponding worker
         {
             success++;
@@ -232,7 +235,6 @@ int main(int argc, char const *argv[])
         }
         else if (comms[0] == "/exit")
         {
-            success++;
             //workers -> log files ara to stelnw se olous na kanoun douleia tous
             for (int i = 0; i < countries.size; i++)
             {
@@ -281,6 +283,7 @@ int main(int argc, char const *argv[])
                     if (countries.items[i].country == comms[4]) //an eisai auti pou psaxnw
                     {
                         //send to worker
+                        std::cerr << comms[4] << "\n";
                         char *minima = new char[com.length() + 1];
                         strcpy(minima, com.c_str());                    //eidallws nmzei oti to com.c_str() einai const char *
                         char *buf = communicator.createBuffer();        //ftiaxnw ton buffer gia na steilw to mnm
@@ -349,8 +352,10 @@ int main(int argc, char const *argv[])
             //an kapoios ton vrei, print else print oti den uparxei autos o patient
             //an kanenas den to exei, fail++;
         }
-        else if (comms[0] == "/numPatientAdmissions") //  /numPatientAdmissions disease d1 d2 [country]
+        else if (comms[0] == "/numPatientAdmissions")
         {
+            //  /numPatientAdmissions disease d1 d2 [country]
+
             //an exeis xwra tote se stelnw ston antistoixo worker
             while (pch != NULL) //kovw tin entoli sta parts tis
             {
@@ -403,6 +408,7 @@ int main(int argc, char const *argv[])
         else if (comms[0] == "/numPatientDischarges")
         {
             //  /numPatientDischarges disease d1 d2 [country]
+
             while (pch != NULL) //kovw tin entoli sta parts tis
             {
                 comms[counter] = pch;
@@ -454,7 +460,6 @@ int main(int argc, char const *argv[])
         else
         {
             failed++;
-            //std::cerr << "Unknown Command!\n"; //doesn't exit the program, gives the user another chance to type properly this time.
             std::cerr << "error\n";
         }
         delete[] cstr; //just in case

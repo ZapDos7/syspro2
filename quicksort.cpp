@@ -5,32 +5,32 @@
 
 using namespace std;
 
-int partition(std::string arr[], int start, int finish)
+int partition(std::string arr[], int low, int high)
 {
-    std::string pivot = arr[finish]; // pivot
-    int i = (start - 1);             // pou einai to smallest
+    std::string pivot = arr[low];
+    int left = low;
 
-    for (int j = start; j < finish; j++)
+    for (int i = low + 1; i < high; i++)
     {
-        date d1(arr[j]);
-        date d2(pivot);
-        if (isLater(d1, d2) > -1) // If current element is smaller than or equal to pivot
+        date d1(arr[i]); //cout << d1.get_date_as_string();
+        date d2(pivot);  //cout << d2.get_date_as_string();
+        if (isLater(d1, d2) > -1)
         {
-            i++; // thesi smallest ++
-            arr[i].swap(arr[j]);
+            left++;
+            arr[i].swap(arr[left]);
         }
     }
-    arr[i + 1].swap(arr[finish]);
-    return (i + 1);
+    arr[low].swap(arr[left]);
+    return (left + 1);
 }
 
-void quickSort(std::string arr[], int start, int finish)
+void quickSort(std::string arr[], int low, int high)
 {
-    if (start < finish)
+    if (low < high)
     {
-        int ok = partition(arr, start, finish); // to ok einai stin thesi tou
+        int ok = partition(arr, low, high); //partitioning index, to pi einai sti swsti thesi tou tr
         //kanw quisort gia ta prin kai gia ta meta xwria
-        quickSort(arr, start, ok - 1);
-        quickSort(arr, ok + 1, finish);
+        quickSort(arr, low, ok - 1);
+        quickSort(arr, ok + 1, high);
     }
 }

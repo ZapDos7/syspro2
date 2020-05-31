@@ -20,7 +20,8 @@ Use:
 - While in the project folder, run "$make" to create the .o files and the executable
 - execute "$make run" to execute (to see the parameters values and alter them, see the Makefile file)
 - execute "$make val" to execute using valgrind (requires it to be installed: sudo apt-get install valgrind)
-- execute "$make clean" to clean the working folder.
+- execute "$make clean" to clean the working folder. (leaves log files intact)
+- execute "$make cleanlog" to remove log files
 - execute "$make script" (doesn't require "$make" beforehand) to execute the script and create the input directory.
 
 Notes:
@@ -35,3 +36,4 @@ Sources:
 - class' notes
 - My previous project for this course.
 - functions "readall" and "writeall" from the book "Unix Programming" by M.J. Rochkind used in the Communication class
+- quicksort pseudocode by https://www.cc.gatech.edu/classes/cs3158_98_fall/
