@@ -123,7 +123,20 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
         //fprintf(stderr, "2o closedir apo %d\n", child_pid);
         //fprintf(stderr, "i am child %d and i am sorting now\n", child_pid);
         //sort time
-        //quickSort(date_file_names, 0, posa_date_arxeia - 1);
+        fprintf(stderr, "\n%d pro quick\t", child_pid);
+        for (int lala = 0; lala < posa_date_arxeia; lala++)
+        {
+            fprintf(stderr, "%s\t", date_file_names[lala].c_str());
+        }
+        fprintf(stderr, "\n");
+
+        quickSort(date_file_names, 0, posa_date_arxeia - 1);
+        fprintf(stderr, "\n%d\t", child_pid);
+        for (int lala = 0; lala < posa_date_arxeia; lala++)
+        {
+            fprintf(stderr, "%s\t", date_file_names[lala].c_str());
+        }
+        fprintf(stderr, "\n");
         //fprintf(stderr, "i am child %d and i have sorted\n", child_pid);
         //and now we enter there and read the data
         //fprintf(stderr, "eimai o %d :\texw %d kai %d\n", child_pid, posa_date_arxeia, posa_arxeia);
