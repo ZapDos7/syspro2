@@ -182,7 +182,7 @@ long int tree::statsExitC(tree_node *tr, date d1, date d2, std::string countryNa
     metritis += statsCx(tr->right, d1, d2, countryName);
     return metritis;
 }
-
+/*
 void tree::insert_to_heap_diseases(tree_node *tr, heap *swros)
 {
     if (tr == NULL)
@@ -221,15 +221,15 @@ void tree::insert_to_heap_countries_dates(tree_node *tr, heap *swros, date d1, d
     }
     insert_to_heap_countries_dates(tr->right, swros, d1, d2);
 }
-
-void insert_to_heap_diseases_countries_dates(tree_node *tr, heap *swros, date d1, date d2, std::string countryName, std::string diseaseName)
+*/
+void tree::insert_to_heap_diseases_countries_dates(tree_node *tr, heap *swros, date d1, date d2, std::string countryName, std::string diseaseName)
 {
     if (tr == NULL)
         return;
     insert_to_heap_diseases_countries_dates(tr->left, swros, d1, d2, countryName, diseaseName);
-    if ((isBetween(*(tr->d), d1, d2) == true)&&(tr->rec->get_country()==countryName)&&(tr->rec->get_disease()==diseaseName))
+    if ((isBetween(*(tr->d), d1, d2) == true) && (tr->rec->get_country() == countryName) && (tr->rec->get_disease() == diseaseName))
     {
-        swros->insert(tr->rec->get_country());
+        swros->insert(tr->rec->get_age());
     }
     insert_to_heap_diseases_countries_dates(tr->right, swros, d1, d2, countryName, diseaseName);
 }

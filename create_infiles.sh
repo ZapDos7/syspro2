@@ -103,9 +103,9 @@ do
             arr[0]="ENTER"
             arr[1]="EXIT" #gia na exei exit prepei na uparxei allou enter!!!
             second=${arr[$rand]}
-            #tuxaio string mono xaraktirwn megethous 1 ews 10
-            fname="$(random-name "$(( ( RANDOM % 10 )  + 1 ))")"
-            lname="$(random-name "$(( ( RANDOM % 10 )  + 1 ))")"
+            #tuxaio string mono xaraktirwn megethous 1 ews 12
+            fname="$(random-name "$(( ( RANDOM % 12 )  + 1 ))")"
+            lname="$(random-name "$(( ( RANDOM % 12 )  + 1 ))")"
             #random astheneia apo to $1
             disease=$( shuf -n 1 $1 )
             #age 0 ews 120

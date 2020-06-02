@@ -22,9 +22,9 @@ public:
     date(date &d);
     ~date();
 
-    int get_day();
-    int get_month();
-    int get_year();
+    int get_day() const;
+    int get_month() const;
+    int get_year() const;
 
     void set_day(int d);
     void set_month(int m);
@@ -33,7 +33,7 @@ public:
     std::string get_date_as_string();
     void print_date();
 };
-short int isLater(date d1, date d2); //0 => same date, 1 => d1 later d2, -1 => d2 later d1
-bool isBetween(date d, date d1, date d2);
+short int isLater(const date &d1, const date &d2); //0 => same date, 1 => d1 later d2, -1 => d2 later d1
+bool isBetween(const date &d, const date &d1, const date &d2);
 
 #endif

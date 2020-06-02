@@ -2,7 +2,12 @@
 
 using namespace std;
 
-date::date() {}
+date::date() {
+    day = 0;
+    month = 0;
+    year = 0;
+    set = false;
+}
 
 date::date(string str)
 {
@@ -77,13 +82,17 @@ date::date(date &d) //copy constructor, kaleitai ws: date d1 = d2;
     {
         if ((d.month < 0) || (d.month > 12))
         {
-            //fprintf(stderr, "Invalid month\n");
+            this->print_date();
+            d.print_date();
+            fprintf(stderr, "Unrecoverable error: Invalid month\n");
             exit(1);
         }
-        //if ((d.day < 0) || (d.day > 31))
-        if ((d.day < 0) || (d.day > 30)) //fixed gia ergasia 2
+        if ((d.day < 0) || (d.day > 31)) //fixed gia ergasia 2
         {
-            //fprintf(stderr, "Invalid day\n");
+            this->print_date();
+            d.print_date();
+            
+            fprintf(stderr, "Unrecoverable error: Invalid day\n");
             exit(1);
         }
         /*if ((d.month == 2) && (d.year % 4 == 0) && (d.day > 29))
@@ -106,7 +115,7 @@ date::date(date &d) //copy constructor, kaleitai ws: date d1 = d2;
 
 date::~date() {}
 
-int date::get_day()
+int date::get_day() const 
 {
     if (this->set == true)
         return this->day;
@@ -114,7 +123,7 @@ int date::get_day()
         return -1;
 }
 
-int date::get_month()
+int date::get_month() const 
 {
     if (this->set == true)
         return this->month;
@@ -122,7 +131,7 @@ int date::get_month()
         return -1;
 }
 
-int date::get_year()
+int date::get_year() const 
 {
     if (this->set == true)
         return this->year;
@@ -146,7 +155,7 @@ std::string date::get_date_as_string()
     }
 }
 
-void date::set_day(int d)
+void date::set_day(int d) 
 {
     if ((d < 0) || (d > 31))
     {
@@ -198,7 +207,7 @@ void date::print_date()
 
 //check if d1 is between d2 & d3 => d2...d1...d3
 
-/*bool*/ short int isLater(date d1, date d2) //is d1 later than d2?
+/*bool*/ short int isLater(const date & d1, const  date & d2) //is d1 later than d2?
 {
     if ((d1.set == false) || (d2.set == false))
     {
@@ -234,7 +243,7 @@ void date::print_date()
 //isLater(a,b): an a>b -> -1
 //an a=b -> 0
 //an a<b -> 1
-bool isBetween(date d, date d1, date d2) //is d between d1 kai d2
+bool isBetween(const date &d, const date& d1, const date& d2) //is d between d1 kai d2
 {
     if ((d.set == false) || (d1.set == false) || (d2.set == false))
     {

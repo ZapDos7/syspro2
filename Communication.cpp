@@ -10,8 +10,10 @@ ssize_t writeall(int fd, const void *buf, ssize_t nbyte) {
         if ((n = write(fd, &((const char *) buf)[nwritten], nbyte - nwritten)) == -1) {
             if (errno == EINTR)
                 continue;
-            else
+            else {
+                perror("writeall \n");
                 return -1;
+            }
         }
         nwritten += n;
     } while (nwritten < nbyte);
@@ -24,10 +26,12 @@ ssize_t readall(int fd, void *buf, ssize_t nbyte) {
 
     do {
         if ((n = read(fd, &((char *) buf)[nread], nbyte - nread)) == -1) {
-            if (errno == EINTR)
-                continue;
-            else
+            if (errno == EINTR) {
+                return 0;
+            } else {
+                perror("Readall \n");
                 return -1;
+            }
         }
         if (n == 0)
             return nread;
@@ -75,13 +79,21 @@ void Communication::send(char *buf, int fd) {
 void Communication::recv(char *buf, int fd) {
     //int check = read(fd, buf, b);
     int check = readall(fd, buf, b);
+    if (check == -1 && errno == EINTR) {
+        return;
+    }
     if (check == -1) //or if check!=n
     {
         cerr << "errno is " << errno << " ";
         perror("communication::recv");
     } else if (check < b) {
-        cerr << "Didn't read enough bytes\n";
-        cerr << "errno is " << errno << " ";
-        perror("communication::recv");
+        if (check == 0) {
+            perror("communication::recv");
+            cerr << "Communication closed by peer \n";
+        } else {
+            cerr << "Didn't read enough bytes\n";
+            cerr << "errno is " << errno << " ";
+            perror("communication::recv");
+        }
     }
 }

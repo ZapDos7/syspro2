@@ -484,13 +484,29 @@ int main(int argc, char const *argv[])
                 counter++;
                 pch = strtok(NULL, delim);
             }
-            if ((counter != 5) || (counter != 4))
+            if ((counter != 5) && (counter != 4))
             {
-                std::cerr << "error\n";
+                std::cerr << "error edw edw edw\n";
                 failed++;
             }
+            //uparxei genika auti i xwra?
             if (counter == 5) //exw country
             {
+                //uparxei?
+                bool uparxei = false;
+                for (int i = 0; i < countries.size; i++)
+                {
+                    if (countries.items[i].country == comms[4])
+                    {
+                        uparxei = true;
+                    }
+                }
+                if (uparxei == false)
+                {
+                    failed++;
+                    fprintf(stderr, "Country %s not in database.\n", comms[4].c_str());
+                    break;
+                }
                 //find se poio worker einai auti i xwra
                 int poios = -1;
                 for (int i = 0; i < countries.size; i++) //gia kathe xwra
@@ -509,28 +525,73 @@ int main(int argc, char const *argv[])
                         break;
                     }
                 }
-                //lipsi
+                char *buf = communicator.createBuffer();
+                communicator.recv(buf, countries.items[poios].in);
+                //communicator.recv(buf, pid_in_out.items[poios].in);
+                if (string(buf) == "ERR") //an lathos command, fail++;
+                {
+                    fprintf(stderr, "Error - unknown or wrongly typed command.\n");
+                    break;
+                }
+                else if (string(buf) == "IDK") //opoios epistrefei "IDK", skip
+                {
+                    fprintf(stdout, "No relevant information exists in database.\n");
+                }
+                else //mou dwses apantisi ok
+                {
+                    //fprintf(stderr, "worker %d has this record\n", pid_in_out.items[i].pid);
+                    fprintf(stdout, "%s %s\n", countries.items[poios].country.c_str(), buf);
+                }
+                communicator.destroyBuffer(buf);
             }
             else //den exw country ara send to all
             {
-                for (int i = 0; i < countries.size; i++) //gia kathe xwra
+                for (int i = 0; i < pid_in_out.size; i++) //gia kathe worker
                 {
-                    std::cerr << comms[4] << "\n";
-                    char *minima = new char[com.size() + 1];
-                    strcpy(minima, com.c_str());                    //eidallws nmzei oti to com.c_str() einai const char *
-                    char *buf = communicator.createBuffer();        //ftiaxnw ton buffer gia na steilw to mnm
-                    communicator.put(buf, minima);                  //vazw to minima sto buf
-                    communicator.send(buf, countries.items[i].out); //to kanw send ara write
-                    communicator.destroyBuffer(buf);                //yeet
-
-                    //o,ti lavw to tupwnw
-                    //fail or success++;
+                    char *minima = new char[com.length() + 1];
+                    strcpy(minima, com.c_str());                     //eidallws nmzei oti to com.c_str() einai const char *
+                    char *buf = communicator.createBuffer();         //ftiaxnw ton buffer gia na steilw to mnm
+                    communicator.put(buf, minima);                   //vazw to minima sto buf
+                    communicator.send(buf, pid_in_out.items[i].out); //to kanw send ara write
+                    communicator.destroyBuffer(buf);                 //yeet
                 }
+                //replies time
+                //std::string replies[w];
+                StringArray replies(w);
+                for (int i = 0; i < w; i++) //receive apo olous
+                {
+                    char *buf = communicator.createBuffer();
+                    communicator.recv(buf, pid_in_out.items[i].in);
+                    if (string(buf) == "ERR") //an lathos command, fail++;
+                    {
+                        fprintf(stderr, "Error - unknown or wrongly typed command.\n");
+                        //break;
+                    }
+                    else if (string(buf) == "IDK") //opoios epistrefei "IDK", skip
+                    {
+                        //auto shmainei oti i astheneia leipei apo to skonaki tou worker ara pame ston epomeno worker
+                        fprintf(stderr, "Worder %d doesn't have disease %s\n", countries.items[i].pid, comms[1].c_str());
+                        //break;
+                    }
+                    else //mou dwses apantisi ok
+                    {
+                        //buf = "Xwra Num\nXwra Num\n etc"
+                        std::string temp_reply(buf);
+                        replies.insert(temp_reply);
+                    }
+                    communicator.destroyBuffer(buf);
+                }
+                //tupwnw
+                for (int i = 0; i < replies.size; i++)
+                {
+                    fprintf(stdout, "%s", replies.items[i].c_str());
+                }
+                fprintf(stdout, "\n");
             }
         }
-        else if (comms[0] == "/numPatientDischarges")
+        else if (comms[0] == "/numPatientDischarges") //  /numPatientDischarges disease d1 d2 [country]
         {
-            //  /numPatientDischarges disease d1 d2 [country]
+            
 
             while (pch != NULL) //kovw tin entoli sta parts tis
             {
@@ -585,8 +646,10 @@ int main(int argc, char const *argv[])
             failed++;
             std::cerr << "error\n";
         }
-        delete[] cstr; //just in case
-    }                  //end while(1)
+    } //end while(1)
+
+    //shutdown
+    //lave apo kathe worker ta succ/fail/total
 
     //kleinw pipes workers' ws AGGR
     for (int j = 0; j < countries.size; j++)

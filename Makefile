@@ -6,7 +6,7 @@ OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=diseaseAggregator
 ARGS= -w 3 -b 4096 -i ../input_dir_large
 #-w -> number of workers, -b -> buffersize for pipes, -i -> input directory
-VAL=valgrind --leak-check=full #-s 
+VAL=valgrind --leak-check=full
 
 
 all: $(SOURCES) $(EXECUTABLE)

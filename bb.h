@@ -37,11 +37,12 @@ public:
     long int statsC(date date1, date date2, std::string cntrn);
     long int statsExit(date date1, date date2);
     long int statsExitC(date date1, date date2, std::string cntrn);
-    void top_k_diseases(int k);
-    void top_k_diseases(int k, date d1, date d2);
-    void top_k_countries(int k);
-    void top_k_countries(int k, date d1, date d2);
+    //void top_k_diseases(int k);
+    //void top_k_diseases(int k, date d1, date d2);
+    //void top_k_countries(int k);
+    //void top_k_countries(int k, date d1, date d2);
     //void top_k_age_ranges(int k, date d1, date d2, std::string countryName, std::string diseaseName);
+    std::string top_k_age_ranges(int k, date d1, date d2, std::string countryName, std::string diseaseName);
 };
 
 class bucket
@@ -64,5 +65,7 @@ public:
     void print_bkt_all(bool isCountry);
     long int buck_stats(date d1, date d2);
 };
+
+int percentagefy(int arithmitis, int paranomastis);
 
 #endif
