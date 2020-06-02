@@ -26,6 +26,11 @@ System Programming Project #2, Spring 2020
 #include "TripleArray.h"
 #include "Triplette.h"
 
+void catchinterrupt(int signo)
+{
+    fclose(stdin);
+}
+
 int main(int argc, char const *argv[])
 {
     //Anagnwsi params
@@ -178,35 +183,37 @@ int main(int argc, char const *argv[])
     //processIds.print();
     //pid_in_out.print();
     //return 0;
-
-    for (int i = 0; i < w; i++)
-    {
+    /*
+    for (int i = 0; i < w; i++) {
         char *buf = communicator.createBuffer();
         communicator.put(buf, "hi\n");
         communicator.send(buf, pid_in_out.items[i].out);
         communicator.destroyBuffer(buf);
     }
 
-    for (int i = 0; i < w; i++)
-    {
+    for (int i = 0; i < w; i++) {
         char *buf = communicator.createBuffer();
         communicator.recv(buf, pid_in_out.items[i].in);
 
         fprintf(stderr, "Elava apo to worker %d to minima: '%s' \n", i, buf);
 
-        if (string(buf) != "yo")
-        {
+        if (string(buf) != "yo") {
             fprintf(stderr, "Lathos sti xeirapsia me to worker %d to minima: %s \n", i, buf);
             exit(1);
         }
         communicator.destroyBuffer(buf);
     }
-
-    //    return 0;
+*/
 
     long int total = 0;
     long int success = 0;
     long int failed = 0;
+
+    static struct sigaction act;
+    act.sa_handler = catchinterrupt;
+    sigfillset(&(act.sa_mask));
+    sigaction(SIGINT, &act, NULL);
+    sigaction(SIGQUIT, &act, NULL);
 
     //commands
     std::string com; //command
@@ -218,6 +225,10 @@ int main(int argc, char const *argv[])
         {
             continue; //ama m dwseis enter, sunexizw na zhtaw entoles
         }
+        if (com[0] != '/')
+        {
+            com = "/" + com; //trexei kai me kai xwris / stis entoles
+        }
         char *cstr = new char[com.length() + 1]; //auto 8a kanw tokenize
         strcpy(cstr, com.c_str());               //copy as string to line sto cstr
         char *pch;
@@ -227,10 +238,11 @@ int main(int argc, char const *argv[])
         int counter = 0;
         comms[0] = pch;
         //check first word to match with command, check entire command if correct
-        total++;
+
         if (comms[0] == "/listCountries") // /listCountries --> for each country print PID of corresponding worker
         {
             success++;
+            total++;
             countries.print_lc(); //den xreiazetai epikoinwnia me workers giati exw "skonaki" ti domi countries
         }
         else if (comms[0] == "/exit")
@@ -278,6 +290,21 @@ int main(int argc, char const *argv[])
             else if (counter == 5) //exw xwra ara paw se auti ti xwra --> se auto to process na kanw tin entoli
             {
                 //find se poio worker einai auti i xwra
+                //uparxei genika auti i xwra?
+                bool uparxei = false;
+                for (int i = 0; i < countries.size; i++)
+                {
+                    if (countries.items[i].country == comms[4])
+                    {
+                        uparxei = true;
+                    }
+                }
+                if (uparxei == false)
+                {
+                    failed++;
+                    fprintf(stderr, "Country %s not in database.\n", comms[4].c_str());
+                }
+                int poios = 0;
                 for (int i = 0; i < countries.size; i++) //gia kathe xwra
                 {
                     if (countries.items[i].country == comms[4]) //an eisai auti pou psaxnw
@@ -291,21 +318,89 @@ int main(int argc, char const *argv[])
                         communicator.send(buf, countries.items[i].out); //to kanw send ara write
                         communicator.destroyBuffer(buf);                //yeet
                         //o,ti lavw to tupwnw
+                        poios = i;
+                        break;
                     }
+                }
+                bool found = false;
+                char *buf = communicator.createBuffer();
+                communicator.recv(buf, countries.items[poios].in);
+                //                communicator.recv(buf, pid_in_out.items[poios].in);
+                if (string(buf) == "ERR") //an lathos command, fail++;
+                {
+                    failed++;
+                    fprintf(stderr, "Lathos command wre \n");
+                    exit(1);
+                }
+                else if (string(buf) == "IDK") //opoios epistrefei "IDK", skip
+                {
+                    //fprintf(stderr, "worker %d has not this record\n", pid_in_out.items[i].pid);
+                }
+                else //mou dwses apantisi ok
+                {    //an kapoios ton vrei, print else print oti den uparxei autos o patient
+                    found = true;
+                    success++;
+                    //fprintf(stderr, "worker %d has this record\n", pid_in_out.items[i].pid);
+                    fprintf(stdout, "%s\n", buf);
+                }
+
+                communicator.destroyBuffer(buf);
+                //metrites
+                if (found == false) //teleiwsame kai kanenas den ton brike
+                {
+                    fprintf(stdout, "This disease doesn't exist in the database.\n");
+                    failed++;
                 }
             }
             else //if (counter==4) //ara den exw xwra ara ti zitaw apo olous
             {
-                for (int i = 0; i < countries.size; i++) //gia kathe xwra
+                for (int i = 0; i < pid_in_out.size; i++) //gia kathe worker
                 {
                     char *minima = new char[com.length() + 1];
-                    strcpy(minima, com.c_str());                    //eidallws nmzei oti to com.c_str() einai const char *
-                    char *buf = communicator.createBuffer();        //ftiaxnw ton buffer gia na steilw to mnm
-                    communicator.put(buf, minima);                  //vazw to minima sto buf
-                    communicator.send(buf, countries.items[i].out); //to kanw send ara write
-                    communicator.destroyBuffer(buf);                //yeet
+                    strcpy(minima, com.c_str());                     //eidallws nmzei oti to com.c_str() einai const char *
+                    char *buf = communicator.createBuffer();         //ftiaxnw ton buffer gia na steilw to mnm
+                    communicator.put(buf, minima);                   //vazw to minima sto buf
+                    communicator.send(buf, pid_in_out.items[i].out); //to kanw send ara write
+                    communicator.destroyBuffer(buf);                 //yeet
+                }
 
-                    //twra tupwnw oti m poun oi workers
+                bool found = false;
+                int sum = 0;
+
+                for (int i = 0; i < w; i++) //send se olous
+                {
+                    char *buf = communicator.createBuffer();
+                    communicator.recv(buf, pid_in_out.items[i].in);
+                    if (string(buf) == "ERR") //an lathos command, fail++;
+                    {
+                        failed++;
+                        fprintf(stderr, "Lathos command wre \n");
+                        exit(1);
+                    }
+                    else if (string(buf) == "IDK") //opoios epistrefei "IDK", skip
+                    {
+                        //fprintf(stderr, "worker %d has not this record\n", pid_in_out.items[i].pid);
+                    }
+                    else //mou dwses apantisi ok
+                    {    //an kapoios ton vrei, print else print oti den uparxei autos o patient
+                        found = true;
+                        success++;
+                        //fprintf(stderr, "worker %d has this record\n", pid_in_out.items[i].pid);
+
+                        sum += atoi(buf);
+                    }
+
+                    communicator.destroyBuffer(buf);
+                    //metrites
+                    if (found == false) //teleiwsame kai kanenas den ton brike
+                    {
+                        fprintf(stdout, "This disease doesn't exist in the database.\n");
+                        failed++;
+                    }
+                    else
+                    {
+                        cout << sum << endl;
+                    }
                 }
             }
         }
@@ -336,6 +431,7 @@ int main(int argc, char const *argv[])
                     communicator.destroyBuffer(buf);                //yeet
 
                     //o,ti mou pei o worker einai i apantisi
+                    //tha lavw ena string "0-20:X,21-40:Y..." pou prepei na kanw tokenize, sort vasei counter (X,Y...) & print properly
                 } //else continue
             }
         }
@@ -348,15 +444,40 @@ int main(int argc, char const *argv[])
                 communicator.send(buf, pid_in_out.items[i].out); //to kanw send ara write
                 communicator.destroyBuffer(buf);                 //yeet
             }
-            //opoios epistrefei "IDK", skip
-            //an kapoios ton vrei, print else print oti den uparxei autos o patient
-            //an kanenas den to exei, fail++;
-        }
-        else if (comms[0] == "/numPatientAdmissions")
-        {
-            //  /numPatientAdmissions disease d1 d2 [country]
+            bool found = false;
+            for (int i = 0; i < w; i++) //send se olous
+            {
+                char *buf = communicator.createBuffer();
+                communicator.recv(buf, pid_in_out.items[i].in);
+                if (string(buf) == "ERR") //an lathos command, fail++;
+                {
+                    failed++;
+                    fprintf(stderr, "Lathos command wre \n");
+                    exit(1);
+                }
+                else if (string(buf) == "IDK") //opoios epistrefei "IDK", skip
+                {
+                    //fprintf(stderr, "worker %d has not this record\n", pid_in_out.items[i].pid);
+                }
+                else //mou dwses apantisi ok
+                {    //an kapoios ton vrei, print else print oti den uparxei autos o patient
+                    found = true;
+                    success++;
+                    //fprintf(stderr, "worker %d has this record\n", pid_in_out.items[i].pid);
+                    fprintf(stdout, "%s\n", buf);
+                }
 
-            //an exeis xwra tote se stelnw ston antistoixo worker
+                communicator.destroyBuffer(buf);
+                //metrites
+                if (found == false) //teleiwsame kai kanenas den ton brike
+                {
+                    fprintf(stdout, "This record doesn't exist in the database.\n");
+                    failed++;
+                }
+            }
+        }
+        else if (comms[0] == "/numPatientAdmissions") //  /numPatientAdmissions disease d1 d2 [country]
+        {
             while (pch != NULL) //kovw tin entoli sta parts tis
             {
                 comms[counter] = pch;
@@ -371,6 +492,7 @@ int main(int argc, char const *argv[])
             if (counter == 5) //exw country
             {
                 //find se poio worker einai auti i xwra
+                int poios = -1;
                 for (int i = 0; i < countries.size; i++) //gia kathe xwra
                 {
                     if (countries.items[i].country == comms[4]) //an eisai auti pou psaxnw
@@ -383,10 +505,11 @@ int main(int argc, char const *argv[])
                         communicator.put(buf, minima);                  //vazw to minima sto buf
                         communicator.send(buf, countries.items[i].out); //to kanw send ara write
                         communicator.destroyBuffer(buf);                //yeet
-                        //o,ti lavw to tupwnw
-                        //fail or success++;
+                        poios = i;
+                        break;
                     }
                 }
+                //lipsi
             }
             else //den exw country ara send to all
             {
@@ -493,6 +616,7 @@ int main(int argc, char const *argv[])
         unlink(names_out.items[i].c_str());
     }
 
+    cout << "Aggregator finished " << endl;
     //ta da
     return 0;
 }

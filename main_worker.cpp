@@ -8,6 +8,7 @@ System Programming Project #2, Spring 2020
 #include <dirent.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <signal.h>
 
 #include "date.h"   //my date class
 #include "ht.h"     //hash table - diki mas domi
@@ -22,6 +23,13 @@ System Programming Project #2, Spring 2020
 #include "StringArray.h"
 #include "main_worker.h"
 
+bool refresh_scheduled = false;
+
+void catchinterrupt2(int signo)
+{
+    // refresh
+    refresh_scheduled = true;
+}
 int main_worker(char *in_dir, int b, string name_out, string name_in)
 {
     int child_pid = getpid();
@@ -51,7 +59,7 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
         communicator.destroyBuffer(buf);
     }
 
-    //fprintf(stderr, "o worker %d exei %d xwres\n", child_pid, countries.size);
+    fprintf(stderr, "o worker %d exei %d xwres\n", child_pid, countries.size);
 
     std::ifstream dataset; //edw 8a kanw open to dataset
 
@@ -64,7 +72,9 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
         std::string monopati(in_dir);
         monopati.append("/");
         monopati.append(countries.items[posa]);
-        //fprintf(stderr, "o worker %d anoigei to %s\n\n", child_pid, monopati.c_str());
+
+        fprintf(stderr, "o worker %d anoigei to %s\n\n", child_pid, monopati.c_str());
+
         dir = opendir(monopati.c_str());
         if (dir == NULL)
         {
@@ -90,8 +100,11 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
             }
         }
         closedir(dir);
-        //fprintf(stderr, "1o closedir apo %d\n", child_pid);
+
+        //fprintf(stderr, "1o closedir apo %d, posa arxeia: %d \n", child_pid, posa_arxeia);
+
         std::string *date_file_names = new string[posa_arxeia];
+
         //ksananoigw na ta valw sto array
         int posa_date_arxeia = 0; //posa evala sto array
         dir = opendir(monopati.c_str());
@@ -120,24 +133,29 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
             }
         }
         closedir(dir);
+
         //fprintf(stderr, "2o closedir apo %d\n", child_pid);
         //fprintf(stderr, "i am child %d and i am sorting now\n", child_pid);
         //sort time
-        fprintf(stderr, "\n%d pro quick\t", child_pid);
-        for (int lala = 0; lala < posa_date_arxeia; lala++)
-        {
-            fprintf(stderr, "%s\t", date_file_names[lala].c_str());
-        }
-        fprintf(stderr, "\n");
+        // fprintf(stderr, "\n%d pro quick\t", child_pid);
 
+        // for (int lala = 0; lala < posa_date_arxeia; lala++) {
+        //     fprintf(stderr, "%s\t", date_file_names[lala].c_str());
+        // }
+        // fprintf(stderr, "\n");
+
+        // cout << "================================================================= \n";
         quickSort(date_file_names, 0, posa_date_arxeia - 1);
-        fprintf(stderr, "\n%d\t", child_pid);
-        for (int lala = 0; lala < posa_date_arxeia; lala++)
-        {
-            fprintf(stderr, "%s\t", date_file_names[lala].c_str());
-        }
-        fprintf(stderr, "\n");
-        //fprintf(stderr, "i am child %d and i have sorted\n", child_pid);
+
+        // cout << "----------------------------------------------------------------- \n";
+
+        // fprintf(stderr, "\n%d\t", child_pid);
+        // for (int lala = 0; lala < posa_date_arxeia; lala++) {
+        //     fprintf(stderr, "%s\t", date_file_names[lala].c_str());
+        // }
+        // fprintf(stderr, "\n");
+
+        // fprintf(stderr, "i am child %d and i have sorted ### \n", child_pid);
         //and now we enter there and read the data
         //fprintf(stderr, "eimai o %d :\texw %d kai %d\n", child_pid, posa_date_arxeia, posa_arxeia);
         //dir = opendir(monopati.c_str());
@@ -148,19 +166,26 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
             path.append(date_file_names[akak]);
             //fprintf(stderr, "o %d paei na anoiksei to %s\n", child_pid, path.c_str());
             dataset.open(path);
+
             if (!dataset.is_open())
-                std::cerr << "error\n";
+            {
+                std::cerr << "###### error\n";
+                exit(1);
+            }
             else if (dataset.is_open())
             {
                 //fprintf(stderr, "paw ma diavasw getline apo %d\n", child_pid);
                 std::string line;
+
                 while (std::getline(dataset, line)) //diavazei olo to this date --> we gotta do it for all files in this folder
                 {
                     std::string wannabe = "";
                     std::string help[6]; //boithitiki domi me ta tokens tou line pou 8a ftiaksw swsta
                     const char *c_string = line.c_str();
                     int counter = 0;
-                    char *token = strtok((char *)c_string, " ");
+                    char *buffer = strdup(c_string);
+                    char *token = strtok(buffer, " ");
+
                     while (token)
                     {
                         //std::cerr << token << '\t';
@@ -225,12 +250,13 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
                                 h->rec->set_exitD(d2.get_date_as_string()); //twra exei exit date
                                 if (magkas == false)                        //prin den imoun set ara update counters:
                                 {
-                                    block *blokaki1 = diseaseHT.search(entry->d_name);
+                                    block *blokaki1 = diseaseHT.search(help[4]);
                                     if (blokaki1 != NULL)
                                     {
                                         blokaki1->update_c_in(false);
                                     }
-                                    block *blokaki2 = countryHT.search(entry->d_name);
+
+                                    block *blokaki2 = countryHT.search(countries.items[posa]);
                                     if (blokaki2 != NULL)
                                     {
                                         blokaki2->update_c_in(false);
@@ -245,40 +271,73 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
             }
             dataset.close();
             //fprintf(stderr, "worker %d going to %d apo %d\n", child_pid, akak, posa_date_arxeia);
+            //send summary:
+            //date_file_names[akak] //imerominia
+            // //xwra
+            // //disease1
+            // 0-20: X cases
+            // 20-40: Y cases
+            //...
+            //disease 2
+            //....
+            //telos
         }
         //closedir(dir);
-        fprintf(stderr, "telos apo %d gia xwra= %s\n", child_pid, countries.items[posa].c_str());
+        //fprintf(stderr, "telos apo %d gia xwra= %s\n", child_pid, countries.items[posa].c_str());
     }
 
     //return 0;
-
+    /*
     char *buf = communicator.createBuffer();
     communicator.recv(buf, out_fd);
 
     fprintf(stderr, "Eimai o worker %d kai perimeno to xairetismo !!! \n", child_pid);
 
-    if (string(buf) == "hi\n")
-    {
+    if (string(buf) == "hi\n") {
         fprintf(stderr, "Eimai o worker %d kai elava to minima !!! \n", child_pid);
-    }
-    else
-    {
+    } else {
         std::cerr << " eimai o " << child_pid << " kai den elava to hi !!!!!";
         exit(0);
     }
     communicator.put(buf, "yo");
     communicator.send(buf, in_fd);
-
+*/
     //return 0;
+
+    /*if (my_ht.search("49xex")==NULL) //worker 1
+    {
+        fprintf(stderr,"ekmek (1) gia ton %d\n", child_pid);
+    }
+    if (my_ht.search("2otxi")==NULL) //worker 2
+    {
+        fprintf(stderr,"ekmek (2) gia ton %d\n", child_pid);
+    }
+    if (my_ht.search("8vg6f")==NULL) //worker 0
+    {
+        fprintf(stderr,"ekmek (0) gia ton %d\n", child_pid);
+    }*/
 
     long int total = 0;
     long int success = 0;
     long int failed = 0;
 
+    static struct sigaction act;
+    act.sa_handler = catchinterrupt2;
+    sigfillset(&(act.sa_mask));
+    sigaction(SIGUSR1, &act, NULL);
+
     while (true)
     {
         char *buf = communicator.createBuffer();
         communicator.recv(buf, out_fd);
+
+        if (refresh_scheduled == true)
+        {
+            refresh_scheduled = false;
+            // refresh
+            continue;
+        }
+
         std::string com(buf); //com is the command as std::string
 
         communicator.destroyBuffer(buf);
@@ -339,39 +398,41 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
                     std::string wannabedate2 = comms[3];
                     if ((date_format(wannabedate1) == false) || (date_format(wannabedate2) == false))
                     {
-                        std::cerr << "error1\n";
+                        //std::cerr << "error1\n";
+                        char *buf = communicator.createBuffer();
+                        communicator.put(buf, "ERR");
+                        communicator.send(buf, in_fd);
+                        communicator.destroyBuffer(buf);
                         failed++;
-                        break;
+                        //break;
                     }
                     //else
                     date d1(wannabedate1);
                     date d2(wannabedate2);
                     if (isLater(d1, d2) == -1) //an d1>d2, epistrefei -1
                     {
-                        std::cerr << "error2\n";
+                        //std::cerr << "error2\n";
+                        char *buf = communicator.createBuffer();
+                        communicator.put(buf, "ERR");
+                        communicator.send(buf, in_fd);
+                        communicator.destroyBuffer(buf);
                         failed++;
-                        break;
+                        //break;
                     }
                     //else ok
                     block *apantisi = diseaseHT.search(virusName);
                     if (apantisi == NULL) //mou zitas na brw kati pou den exw sti vasi m
                     {
-                        std::string reply = virusName;
-                        reply += " ";
-                        reply += "0.";
                         failed++;
                         char *buf = communicator.createBuffer();
-                        communicator.put(buf, reply.c_str());
+                        communicator.put(buf, "IDK");
                         communicator.send(buf, in_fd);
                         communicator.destroyBuffer(buf);
                     }
                     else
                     {
-                        std::string reply = virusName;
-                        reply += " ";
                         long int apantisi_num = apantisi->statsC(d1, d2, cntrName);
-                        std::string apantisi_str = to_string(apantisi_num);
-                        reply += apantisi_str;
+                        std::string reply = to_string(apantisi_num);
                         char *buf = communicator.createBuffer();
                         communicator.put(buf, reply.c_str());
                         communicator.send(buf, in_fd);
@@ -387,7 +448,11 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
                 std::string wannabedate2 = comms[3];
                 if ((date_format(wannabedate1) == false) || (date_format(wannabedate2) == false))
                 {
-                    std::cerr << "error1\n";
+                    //std::cerr << "error1\n";
+                    char *buf = communicator.createBuffer();
+                    communicator.put(buf, "ERR");
+                    communicator.send(buf, in_fd);
+                    communicator.destroyBuffer(buf);
                     failed++;
                     break;
                 }
@@ -396,7 +461,11 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
                 date d2(wannabedate2);
                 if (isLater(d1, d2) == -1) //an d1>d2, epistrefei -1
                 {
-                    std::cerr << "error2\n";
+                    //std::cerr << "error2\n";
+                    char *buf = communicator.createBuffer();
+                    communicator.put(buf, "ERR");
+                    communicator.send(buf, in_fd);
+                    communicator.destroyBuffer(buf);
                     failed++;
                     break;
                 }
@@ -404,7 +473,7 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
                 block *apantisi = diseaseHT.search(virusName);
                 if (apantisi == NULL) //mou zitas na brw kati pou den exw sti vasi m
                 {
-                    std::cerr << "error5\n";
+                    //std::cerr << "error5\n";
                     char *buf = communicator.createBuffer();
                     communicator.put(buf, "IDK");
                     communicator.send(buf, in_fd);
@@ -413,9 +482,7 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
                 }
                 else
                 {
-                    std::string reply = virusName;
-                    reply += " ";
-                    reply += apantisi->stats(d1, d2);
+                    std::string reply = to_string(apantisi->stats(d1, d2));
                     char *buf = communicator.createBuffer();
                     communicator.put(buf, reply.c_str());
                     communicator.send(buf, in_fd);
@@ -425,7 +492,11 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
             }
             else //mou edwses alla m nt alla orismata
             {
-                std::cerr << "error6\n";
+                //std::cerr << "error6\n";
+                char *buf = communicator.createBuffer();
+                communicator.put(buf, "ERR");
+                communicator.send(buf, in_fd);
+                communicator.destroyBuffer(buf);
                 failed++;
             }
         }
@@ -440,19 +511,26 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
             }
             if ((counter > 6) || counter < 4)
             {
-                fprintf(stderr, "error\n");
-                exit(-1);
+                //fprintf(stderr, "error\n");
+                char *buf = communicator.createBuffer();
+                communicator.put(buf, "ERR");
+                communicator.send(buf, in_fd);
+                communicator.destroyBuffer(buf);
+                //exit(-1);
             }
-            //int k = atoi(comms[1].c_str());
+            int k = atoi(comms[1].c_str());
             std::string countryName = comms[2];
             std::string diseaseName = comms[3];
             block *b = countryHT.search(countryName);
             if (b == NULL)
             {
-                std::cerr << "error\n"; //else print
+                //std::cerr << "error\n"; //else print
+                char *buf = communicator.createBuffer();
+                communicator.put(buf, "IDK");
+                communicator.send(buf, in_fd);
+                communicator.destroyBuffer(buf);
                 //std::cerr << countryName << " 0\n";
-            }
-            //age ranges: 0-20, 21-40, 41-60, 60+
+            } //age ranges: 0-20, 21-40, 41-60, 60+
             else
             {
                 if (counter == 6)
@@ -461,32 +539,48 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
                     std::string wannabedate2 = comms[5];
                     if ((date_format(wannabedate1) == false) || (date_format(wannabedate2) == false))
                     {
-                        std::cerr << "error\n";
-                        break;
+                        //std::cerr << "error\n";
+                        char *buf = communicator.createBuffer();
+                        communicator.put(buf, "ERR");
+                        communicator.send(buf, in_fd);
+                        communicator.destroyBuffer(buf);
+                        failed++;
+                        //break;
                     }
                     //else dates are ok
                     date d1(wannabedate1);
                     date d2(wannabedate2);
                     if (isLater(d1, d2) == -1) //an d1>d2, epistrefei -1
                     {
-                        std::cerr << "error\n";
-                        break;
+                        char *buf = communicator.createBuffer();
+                        communicator.put(buf, "ERR");
+                        communicator.send(buf, in_fd);
+                        communicator.destroyBuffer(buf);
+                        failed++;
+                        //std::cerr << "error\n";
+                        //break;
                     } //else dates are ok ok ara kaloume
                     //return ta age ranges
-                    //b->top_k_diseases(k, d1, d2);
+                    std::string apantisi = b->top_k_age_ranges(k, d1, d2, countryName, diseaseName);
+                    char *buf = communicator.createBuffer();
+                    communicator.put(buf, apantisi.c_str());
+                    communicator.send(buf, in_fd);
+                    communicator.destroyBuffer(buf);
+                    success++;
                 }
                 else
                 {
-                    std::cerr << "error\n";
+                    char *buf = communicator.createBuffer();
+                    communicator.put(buf, "ERR");
+                    communicator.send(buf, in_fd);
+                    communicator.destroyBuffer(buf);
+                    failed++;
                 }
             }
         }
         else if (comms[0] == "/searchPatientRecord")
         {
             //  /searchPatientRecord recordID
-
-            //  /searchPatientRecord recordID
-
             while (pch != NULL) //kovw tin entoli sta parts tis
             {
                 comms[counter] = pch;
@@ -495,7 +589,10 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
             }
             if (counter != 2)
             {
-                std::cerr << "error1\n";
+                //std::cerr << "error1\n";
+                char *buf = communicator.createBuffer();
+                communicator.put(buf, "ERR");
+                communicator.send(buf, in_fd);
                 failed++;
             }
             else
@@ -521,12 +618,14 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
                     apantisi += " ";
                     apantisi += anazitisis->rec->get_country();
                     apantisi += " ";
-                    apantisi += anazitisis->rec->get_age();
+                    apantisi += to_string(anazitisis->rec->get_age());
                     apantisi += " ";
                     apantisi += anazitisis->rec->get_entryDate().get_date_as_string();
                     apantisi += " ";
                     apantisi += anazitisis->rec->get_exitDate().get_date_as_string();
-                    fprintf(stderr, "%s\n", apantisi.c_str());
+                    char *buf = communicator.createBuffer();
+                    communicator.put(buf, apantisi);
+                    communicator.send(buf, in_fd);
                     success++;
                 }
             }
@@ -663,6 +762,7 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
             std::cerr << "error\n";
             failed++;
         }
-        delete[] buf; //just in case
-    }                 //end while(1)
+    } //end while(1)
+
+    return 0;
 }
