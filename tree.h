@@ -13,6 +13,7 @@ public:
     record *rec;
     tree_node *left;
     tree_node *right;
+    date * exitD;
 
     tree_node();
     tree_node(record *r);
@@ -38,7 +39,7 @@ public:
     //void insert_to_heap_diseases_dates(tree_node *tr, heap *swros, date d1, date d2);
     //void insert_to_heap_countries(tree_node *tr, heap *swros);
     //void insert_to_heap_countries_dates(tree_node *tr, heap *swros, date d1, date d2);
-    void insert_to_heap_diseases_countries_dates(tree_node *tr, heap *swros, date d1, date d2, std::string countryName, std::string diseaseName);
+    void insert_to_heap_diseases_countries_dates(tree_node *tr, heap *swros, date d1, date d2, std::string diseaseName);
 };
 
 #endif

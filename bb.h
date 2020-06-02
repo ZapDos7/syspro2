@@ -42,7 +42,7 @@ public:
     //void top_k_countries(int k);
     //void top_k_countries(int k, date d1, date d2);
     //void top_k_age_ranges(int k, date d1, date d2, std::string countryName, std::string diseaseName);
-    std::string top_k_age_ranges(int k, date d1, date d2, std::string countryName, std::string diseaseName);
+    std::string top_k_age_ranges(int k, date d1, date d2, std::string diseaseName);
 };
 
 class bucket

@@ -10,6 +10,14 @@ tree_node::tree_node(record *r)
     this->left = NULL;
     this->right = NULL;
     this->rec = r;
+    if (r->get_exitDate().set == false)
+    {
+        this->exitD = NULL;
+    }
+    else
+    {
+        this->exitD = r->get_exitDatePtr();
+    }
 }
 
 tree_node::tree_node()
@@ -49,6 +57,12 @@ tree_node *tree::insert(tree_node *tr, record *r) //arxiki klisi tis: t.root = t
     d0.set_day(r->get_entryDate().get_day());
     d0.set_month(r->get_entryDate().get_month());
     d0.set_year(r->get_entryDate().get_year());
+
+    //same gia exitD
+    //date d1;
+    //d1.set_day(r->get_exitDate().get_day());
+    //d1.set_month(r->get_exitDate().get_month());
+    //d1.set_year(r->get_exitDate().get_year());
     //bazw sto dentro entry dates pou 8a einai sigoura set
     //std::cerr << "Molis mpika stin insert kai paw na valw auto: " << d0.get_date_as_string() << "\n";
 
@@ -156,10 +170,21 @@ long int tree::statsExit(tree_node *tr, date d1, date d2) //idia me stats alla v
         return metritis;
     }
     metritis += statsExit(tr->left, d1, d2);
-    if (isBetween(tr->rec->get_exitDate(), d1, d2) == true)
-    //if (isBetween(*(tr->rec->get_exitDatePtr()), d1, d2) == true)
+    if (tr->rec->get_exitDate().get_date_as_string() != "-")
     {
-        metritis++;
+        std::string tempdate = tr->rec->get_exitDate().get_date_as_string();
+        date tempdate2(tempdate);
+        if (isBetween(tempdate2, d1, d2) == true)
+        {
+            metritis++;
+        }
+        /*
+        if (isBetween(*(tr->exitD), d1, d2) == true)
+        //if (isBetween(tr->rec->get_exitDate(), d1, d2) == true)
+        //if (isBetween(*(tr->rec->get_exitDatePtr()), d1, d2) == true)
+        {
+            metritis++;
+        }*/
     }
     metritis += statsExit(tr->right, d1, d2);
     return metritis;
@@ -172,13 +197,28 @@ long int tree::statsExitC(tree_node *tr, date d1, date d2, std::string countryNa
         return metritis;
     }
     metritis += statsExitC(tr->left, d1, d2, countryName);
-    //if (isBetween(*(tr->rec->get_exitDatePtr()), d1, d2) == true)
-    if (isBetween(tr->rec->get_exitDate(), d1, d2) == true)
+    if (tr->rec->get_exitDate().get_date_as_string() != "-")
     {
-        if (tr->rec->get_country() == countryName)
+        std::string tempdate = tr->rec->get_exitDate().get_date_as_string();
+        date tempdate2(tempdate);
+        if (isBetween(tempdate2, d1, d2) == true)
         {
-            metritis++;
+            if (tr->rec->get_country() == countryName)
+            {
+                metritis++;
+            }
         }
+        /*
+        //if (isBetween(*(tr->rec->get_exitDatePtr()), d1, d2) == true)
+        //if (isBetween(tr->rec->get_exitDate(), d1, d2) == true)
+        if (isBetween(*(tr->exitD), d1, d2) == true)
+        {
+            if (tr->rec->get_country() == countryName)
+            {
+                metritis++;
+            }
+        }
+        */
     }
     metritis += statsExitC(tr->right, d1, d2, countryName);
     return metritis;
@@ -223,14 +263,14 @@ void tree::insert_to_heap_countries_dates(tree_node *tr, heap *swros, date d1, d
     insert_to_heap_countries_dates(tr->right, swros, d1, d2);
 }
 */
-void tree::insert_to_heap_diseases_countries_dates(tree_node *tr, heap *swros, date d1, date d2, std::string countryName, std::string diseaseName)
+void tree::insert_to_heap_diseases_countries_dates(tree_node *tr, heap *swros, date d1, date d2, std::string diseaseName)
 {
     if (tr == NULL)
         return;
-    insert_to_heap_diseases_countries_dates(tr->left, swros, d1, d2, countryName, diseaseName);
-    if ((isBetween(*(tr->d), d1, d2) == true) && (tr->rec->get_country() == countryName) && (tr->rec->get_disease() == diseaseName))
+    insert_to_heap_diseases_countries_dates(tr->left, swros, d1, d2, diseaseName);
+    if ((isBetween(*(tr->d), d1, d2) == true) && (tr->rec->get_disease() == diseaseName))
     {
-        swros->insert(tr->rec->get_age());
+        //swros->insert(tr->rec->get_age());
     }
-    insert_to_heap_diseases_countries_dates(tr->right, swros, d1, d2, countryName, diseaseName);
+    insert_to_heap_diseases_countries_dates(tr->right, swros, d1, d2, diseaseName);
 }

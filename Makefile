@@ -23,6 +23,12 @@ run:
 clean:
 	rm -f $(OBJECTS) $(EXECUTABLE)
 
+test1:
+	./$(EXECUTABLE) -w 1 -b 4096 -i ../input_dir_tiny
+
+test3:
+	./$(EXECUTABLE) -w 3 -b 4096 -i ../input_dir_tiny
+
 cleanlog:
 	rm log_file.*
 

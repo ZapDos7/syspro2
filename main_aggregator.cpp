@@ -10,6 +10,7 @@ System Programming Project #2, Spring 2020
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <signal.h>
 
 #include "date.h"   //my date class
 #include "ht.h"     //hash table - diki mas domi
@@ -209,6 +210,7 @@ int main(int argc, char const *argv[])
     long int success = 0;
     long int failed = 0;
 
+    //an o aggr lavei SIGINT/SIGQUIT (px Ctrl+C) tote paei kai ektelei tin catchinterrupt pou kleinei to while ara paei apo katw kanei shutdown ektos tis while kai eimaste ok
     static struct sigaction act;
     act.sa_handler = catchinterrupt;
     sigfillset(&(act.sa_mask));
@@ -247,14 +249,40 @@ int main(int argc, char const *argv[])
         }
         else if (comms[0] == "/exit")
         {
-            //workers -> log files ara to stelnw se olous na kanoun douleia tous
-            for (int i = 0; i < countries.size; i++)
+            for (int i = 0; i < w; i++)
             {
-                //steile se kathe worker to mnm aplws
                 char *buf = communicator.createBuffer();
                 communicator.put(buf, comms[0]);
-                communicator.send(buf, countries.items[i].out);
+                communicator.send(buf, pid_in_out.items[i].out);
                 communicator.destroyBuffer(buf);
+            }
+            std::string *results = new std::string[w];
+            for (int i = 0; i < w; i++)
+            {
+                char *buf = communicator.createBuffer();
+                communicator.recv(buf, pid_in_out.items[i].in);
+                std::string tmp(buf);
+                results[i] = tmp;
+                communicator.destroyBuffer(buf);
+            }
+            int metritis = 0;
+            int *noumera = new int(w);
+            noumera[0] = total;
+            noumera[1] = success;
+            noumera[2] = failed;
+            for (int i = 0; i < w; i++)
+            {
+                char *cstr2 = new char[results[i].length() + 1];
+                strcpy(cstr2, com.c_str());
+                char *pch2;
+                const char delim2[2] = ","; // \0
+                pch2 = strtok(cstr2, delim2);
+                while (pch2 != NULL)
+                {
+                    noumera[metritis] += atoi(pch2);
+                    metritis++;
+                    pch2 = strtok(NULL, delim2);
+                }
             }
 
             //free memory again as needed
@@ -265,7 +293,7 @@ int main(int argc, char const *argv[])
             logfile.open(onomaarxeiou);
             for (int i = 0; i < countries.size; i++) //grafw poies einai oi xwres m
             {
-                logfile << countries.items[i].country;
+                logfile << countries.items[i].country << "\n";
             }
             logfile << "TOTAL: " << total << "\n";     //posa erwthmata mou irthan
             logfile << "SUCCESS: " << success << "\n"; //posa success
@@ -404,9 +432,9 @@ int main(int argc, char const *argv[])
                 }
             }
         }
-        else if (comms[0] == "/topk-AgeRanges") //mono se 1 xwra afora
-        {                                       // /topk-AgeRanges k country disease d1 d2
-            while (pch != NULL)                 //kovw tin entoli sta parts tis
+        else if (comms[0] == "/topk-AgeRanges") // /topk-AgeRanges k country disease d1 d2
+        {
+            while (pch != NULL)
             {
                 comms[counter] = pch;
                 counter++;
@@ -414,28 +442,69 @@ int main(int argc, char const *argv[])
             }
             if (counter != 6)
             {
-                std::cerr << "error\n";
+                std::cerr << "Wrong amount of agruements\n";
                 failed++;
+                break;
             }
+            //is k anamesa se 1 kai 4?
+            int k = atoi(comms[1].c_str());
+            if ((k < 1) || (k > 4))
+            {
+                fprintf(stderr, "Wrong value for k.\n");
+                failed++;
+                break;
+            }
+            //find se poio worker einai auti i xwra
+            //uparxei genika auti i xwra?
+            bool uparxei = false;
+            for (int i = 0; i < countries.size; i++)
+            {
+                if (countries.items[i].country == comms[2])
+                {
+                    uparxei = true;
+                }
+            }
+            if (uparxei == false)
+            {
+                failed++;
+                fprintf(stderr, "Country %s not in database.\n", comms[4].c_str());
+                break;
+            }
+            int poios = -1;
             for (int i = 0; i < countries.size; i++) //gia kathe xwra
             {
                 if (countries.items[i].country == comms[2]) //an eisai auti pou psaxnw
                 {
                     //send to worker
-                    std::cerr << comms[4] << "\n";
+                    //std::cerr << comms[4] << "\n";
                     char *minima = new char[com.length() + 1];
                     strcpy(minima, com.c_str());                    //eidallws nmzei oti to com.c_str() einai const char *
                     char *buf = communicator.createBuffer();        //ftiaxnw ton buffer gia na steilw to mnm
                     communicator.put(buf, minima);                  //vazw to minima sto buf
                     communicator.send(buf, countries.items[i].out); //to kanw send ara write
                     communicator.destroyBuffer(buf);                //yeet
-
-                    //o,ti mou pei o worker einai i apantisi
-                    //tha lavw ena string "0-20:X,21-40:Y..." pou prepei na kanw tokenize, sort vasei counter (X,Y...) & print properly
-                } //else continue
+                    poios = i;
+                    break;
+                }
             }
+            //paw na dw tin apantisi
+            char *buf = communicator.createBuffer();
+            communicator.recv(buf, countries.items[poios].in);
+            if (string(buf) == "ERR") //an lathos command, fail++;
+            {
+                fprintf(stderr, "Lathos command wre \n");
+            }
+            else if (string(buf) == "IDK") //opoios epistrefei "IDK", skip
+            {
+                fprintf(stderr, "No reply yielded\n");
+            }
+            else //mou dwses apantisi ok
+            {
+                fprintf(stdout, "%s\n", buf);
+            }
+            communicator.destroyBuffer(buf);
         }
-        else if (comms[0] == "/searchPatientRecord")
+        else if (comms[0] == "/searchPatientRecord") // /searchPatientRecord id
         {
             for (int i = 0; i < w; i++) //send se olous
             {
@@ -711,6 +780,60 @@ int main(int argc, char const *argv[])
 
     //shutdown
     //lave apo kathe worker ta succ/fail/total
+    for (int i = 0; i < w; i++)
+    {
+        char *buf = communicator.createBuffer();
+        communicator.put(buf, "/exit");
+        communicator.send(buf, pid_in_out.items[i].out);
+        communicator.destroyBuffer(buf);
+    }
+    std::string *results = new std::string[w];
+    for (int i = 0; i < w; i++)
+    {
+        char *buf = communicator.createBuffer();
+        communicator.recv(buf, pid_in_out.items[i].in);
+        std::string tmp(buf);
+        results[i] = tmp;
+        communicator.destroyBuffer(buf);
+    }
+    int metritis = 0;
+    int *noumera = new int(w);
+    noumera[0] = total;
+    noumera[1] = success;
+    noumera[2] = failed;
+    for (int i = 0; i < w; i++)
+    {
+        char *cstr2 = new char[results[i].length() + 1];
+        strcpy(cstr2, com.c_str());
+        char *pch2;
+        const char delim2[2] = ","; // \0
+        pch2 = strtok(cstr2, delim2);
+        while (pch2 != NULL)
+        {
+            noumera[metritis] += atoi(pch2);
+            metritis++;
+            pch2 = strtok(NULL, delim2);
+        }
+    }
+    ofstream logfile;
+    std::string onomaarxeiou = "log_file.";
+    onomaarxeiou += to_string(getpid());
+    logfile.open(onomaarxeiou);
+    for (int i = 0; i < countries.size; i++) //grafw poies einai oi xwres m
+    {
+        logfile << countries.items[i].country << "\n";
+    }
+    logfile << "TOTAL: " << total << "\n";     //posa erwthmata mou irthan
+    logfile << "SUCCESS: " << success << "\n"; //posa success
+    logfile << "FAIL: " << failed << "\n";     //posa fail
+    logfile.close();
+
+    //stelnw sigkill sta paidia
+    for (int i = 0; i < w; i++)
+    {
+        kill(pid_in_out.items[i].pid, SIGKILL);
+    }
+    
 
     //kleinw pipes workers' ws AGGR
     for (int j = 0; j < countries.size; j++)

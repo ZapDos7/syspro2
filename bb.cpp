@@ -260,7 +260,7 @@ void block::top_k_countries(int k, date d1, date d2)
 */
 
 //void block::top_k_age_ranges(int k, date d1, date d2, std::string countryName, std::string diseaseName)
-std::string block::top_k_age_ranges(int k, date d1, date d2, std::string countryName, std::string diseaseName)
+std::string block::top_k_age_ranges(int k, date d1, date d2, std::string diseaseName)
 {
     heap swros;
     int metritis1 = 0;
@@ -268,116 +268,117 @@ std::string block::top_k_age_ranges(int k, date d1, date d2, std::string country
     int metritis3 = 0;
     int metritis4 = 0; //1 -> 0-20, 2->21-40, 3->41-60, 4->60+
     int ola = 0;       //oloi oi metrites mazi gia pososto
-    this->my_tree->insert_to_heap_diseases_countries_dates(my_tree->root, &swros, d1, d2, countryName, diseaseName);
+    return "top-k function under construction\n";
+    this->my_tree->insert_to_heap_diseases_countries_dates(my_tree->root, &swros, d1, d2, diseaseName);
     heap_node node;
-    if (swros.size > k)
+    
+    //kai na epistrepsw k results
+    std::string *allstats = new std::string[swros.size];    //8a exei mesastring tis morfis: "X, Y, Z" opoy X = apo, Y = ews, Z = counter
+    for (int i = 0; i < swros.size; i++) //upo kanonikes sunthikes, swros.size = 4 alla mporei kai ligotero
     {
-        for (int i = 0; i < k; i++)
+        swros.pop_root(&node);
+        std::string apantisaki = node.get_node_data();
+        allstats[i] = apantisaki;
+    }
+    //prwta briskw to ola
+    for (int i = 0; i < swros.size; i++)
+    {
+        const char *apantisaki_char = allstats[i].c_str();
+        char *buffer = strdup(apantisaki_char);
+        char *token = strtok(buffer, ",");
+        int stoixeia[3];
+        int metraw = 0;
+        while (token != NULL)
         {
-            swros.pop_root(&node);
-            //node.print_heap_node();
-            int stoixeia[3];
-            std::string apantisaki = node.get_node_data();
-            char *char_apantisaki = (char *)apantisaki.c_str();
-            char *token;
-            token = strtok(char_apantisaki, ",");
-            int metraw = 0;
-            while (token != NULL)
-            {
-                //stoixeia[metraw] = stoi(to_string(token));
-                stoixeia[metraw] = atoi(token); //apo    ews    counter
-                metraw++;
-                token = strtok(NULL, ",");
-            }
-            if ((stoixeia[0] == 0) && stoixeia[1] == 20)
-            {
-                //metritis1++;
-                metritis1 += stoixeia[2];
-                ola += stoixeia[2];
-            }
-            else if ((stoixeia[0] == 21) && stoixeia[1] == 40)
-            {
-                //metritis2++;
-                metritis2 += stoixeia[2];
-                ola += stoixeia[2];
-            }
-            else if ((stoixeia[0] == 41) && stoixeia[1] == 60)
-            {
-                //metritis3++;
-                metritis3 += stoixeia[2];
-                ola += stoixeia[2];
-            }
-            else if ((stoixeia[0] == 61) && stoixeia[1] == 120)
-            {
-                //metritis4++;
-                metritis4 += stoixeia[2];
-                ola += stoixeia[2];
-            }
-            //pososta
-            //return them
+            //stoixeia[metraw] = stoi(to_string(token));
+            stoixeia[metraw] = atoi(token); //apo    ews    counter
+            metraw++;
+            token = strtok(NULL, ",");
+        }
+        if ((stoixeia[0] == 0) && stoixeia[1] == 20)
+        {
+            //metritis1++;
+            metritis1 += stoixeia[2];
+            ola += stoixeia[2];
+        }
+        else if ((stoixeia[0] == 21) && stoixeia[1] == 40)
+        {
+            //metritis2++;
+            metritis2 += stoixeia[2];
+            ola += stoixeia[2];
+        }
+        else if ((stoixeia[0] == 41) && stoixeia[1] == 60)
+        {
+            //metritis3++;
+            metritis3 += stoixeia[2];
+            ola += stoixeia[2];
+        }
+        else if ((stoixeia[0] == 61) && stoixeia[1] == 120)
+        {
+            //metritis4++;
+            metritis4 += stoixeia[2];
+            ola += stoixeia[2];
         }
     }
-    else //swros.size < k
+    //meta percentagefy
+    std::string *allstats_percent = new std::string[swros.size]; //8a exei mesastring tis morfis: "X, Y, Z" opoy X = apo, Y = ews, Z = pososto (% twn olwn)
+    for (int i = 0; i < k; i++)
     {
-        for (int i = 0; i < swros.size; i++)
+        const char *apantisaki_char = allstats[i].c_str();
+        char *buffer = strdup(apantisaki_char);
+        char *token = strtok(buffer, ",");
+        int stoixeia[3];
+        int metraw = 0;
+        while (token != NULL)
         {
-            swros.pop_root(&node);
-            //node.print_heap_node();
-            int stoixeia[3];
-            std::string apantisaki = node.get_node_data();
-            char *char_apantisaki = (char *)apantisaki.c_str();
-            char *token;
-            token = strtok(char_apantisaki, ",");
-            int metraw = 0;
-            while (token != NULL)
-            {
-                //stoixeia[metraw] = stoi(to_string(token));
-                stoixeia[metraw] = atoi(token);
-                metraw++;
-                token = strtok(NULL, ",");
-            }
-            if ((stoixeia[0] == 0) && stoixeia[1] == 20)
-            {
-                //metritis1++;
-                metritis1 += stoixeia[2];
-                ola += stoixeia[2];
-            }
-            else if ((stoixeia[0] == 21) && stoixeia[1] == 40)
-            {
-                //metritis2++;
-                metritis2 += stoixeia[2];
-                ola += stoixeia[2];
-            }
-            else if ((stoixeia[0] == 41) && stoixeia[1] == 60)
-            {
-                //metritis3++;
-                metritis3 += stoixeia[2];
-                ola += stoixeia[2];
-            }
-            else if ((stoixeia[0] == 61) && stoixeia[1] == 120)
-            {
-                //metritis4++;
-                metritis4 += stoixeia[2];
-                ola += stoixeia[2];
-            }
+            //stoixeia[metraw] = stoi(to_string(token));
+            stoixeia[metraw] = atoi(token); //apo    ews    counter
+            metraw++;
+            token = strtok(NULL, ",");
+        }
+        if ((stoixeia[0] == 0) && stoixeia[1] == 20)
+        {
+            allstats_percent[i].append(std::to_string(stoixeia[0])); //apo
+            allstats_percent[i].append("-");
+            allstats_percent[i].append(std::to_string(stoixeia[1])); //ews
+            allstats_percent[i].append(":");
+            allstats_percent[i].append(std::to_string(percentagefy(metritis1, ola)));
+        }
+        else if ((stoixeia[0] == 21) && stoixeia[1] == 40)
+        {
+            allstats_percent[i].append(std::to_string(stoixeia[0])); //apo
+            allstats_percent[i].append("-");
+            allstats_percent[i].append(std::to_string(stoixeia[1])); //ews
+            allstats_percent[i].append(":");
+            allstats_percent[i].append(std::to_string(percentagefy(metritis2, ola)));
+        }
+        else if ((stoixeia[0] == 41) && stoixeia[1] == 60)
+        {
+            allstats_percent[i].append(std::to_string(stoixeia[0])); //apo
+            allstats_percent[i].append("-");
+            allstats_percent[i].append(std::to_string(stoixeia[1])); //ews
+            allstats_percent[i].append(":");
+            allstats_percent[i].append(std::to_string(percentagefy(metritis3, ola)));
+        }
+        else if ((stoixeia[0] == 61) && stoixeia[1] == 120)
+        {
+            allstats_percent[i].append(std::to_string(stoixeia[0])); //apo
+            allstats_percent[i].append("+");
+            //allstats_percent[i].append(std::to_string(stoixeia[1])); //ews
+            allstats_percent[i].append(":");
+            allstats_percent[i].append(std::to_string(percentagefy(metritis4, ola)));
         }
     }
-    std::string answer = "";
-    answer.append("0-20:");
-    answer.append(std::to_string(percentagefy(metritis1, ola)));
-    answer.append(",");
-    answer.append("21-40:");
-    answer.append(std::to_string(percentagefy(metritis2, ola)));
-    answer.append(",");
-    answer.append("41-60:");
-    answer.append(std::to_string(percentagefy(metritis3, ola)));
-    answer.append(",");
-    answer.append("60-120:");
-    answer.append(std::to_string(percentagefy(metritis4, ola)));
-    //answer.append(",");
-    return answer;
 
-    //twra oi metrites mou exoun ta stoixeia pou thelw ara ta kanw percentages me tin percentagefy kai auto to epistrefw ston aggr na to kanei parse?
+    //kai epeita k stoixeia tou string[]se 1 string me allo delim (oxi ',')
+    std::string answer = "";
+    for (int i = 0; i < k; i++)
+    {
+        answer.append(allstats_percent[i]);
+        answer.append("\n");
+    }
+
+    return answer;
 }
 
 /////////////////////////BUCKET//////////////////////

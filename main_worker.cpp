@@ -27,7 +27,7 @@ bool refresh_scheduled = false;
 
 void catchinterrupt2(int signo)
 {
-    // refresh
+    // refresh stin main gia na exw prosvasi se mi global vars
     refresh_scheduled = true;
 }
 int main_worker(char *in_dir, int b, string name_out, string name_in)
@@ -59,7 +59,7 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
         communicator.destroyBuffer(buf);
     }
 
-    fprintf(stderr, "o worker %d exei %d xwres\n", child_pid, countries.size);
+    //fprintf(stderr, "o worker %d exei %d xwres\n", child_pid, countries.size);
 
     std::ifstream dataset; //edw 8a kanw open to dataset
 
@@ -73,7 +73,7 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
         monopati.append("/");
         monopati.append(countries.items[posa]);
 
-        fprintf(stderr, "o worker %d anoigei to %s\n\n", child_pid, monopati.c_str());
+        //fprintf(stderr, "o worker %d anoigei to %s\n\n", child_pid, monopati.c_str());
 
         dir = opendir(monopati.c_str());
         if (dir == NULL)
@@ -285,7 +285,7 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
         //closedir(dir);
         //fprintf(stderr, "telos apo %d gia xwra= %s\n", child_pid, countries.items[posa].c_str());
     }
-
+    fprintf(stderr, "Worker %d ready\n", child_pid);
     //return 0;
     /*
     char *buf = communicator.createBuffer();
@@ -319,7 +319,7 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
         if (refresh_scheduled == true)
         {
             refresh_scheduled = false;
-            // refresh
+            // refresh - WIP
             continue;
         }
         std::string com(buf); //com is the command as std::string
@@ -347,12 +347,23 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
             logfile.open(onomaarxeiou);
             for (int i = 0; i < countries.size; i++) //grafw poies einai oi xwres m
             {
-                logfile << countries.items[i];
+                logfile << countries.items[i] << "\n";
             }
             logfile << "TOTAL: " << total << "\n";     //posa erwthmata mou irthan
             logfile << "SUCCESS: " << success << "\n"; //posa success
             logfile << "FAIL: " << failed << "\n";     //posa fail
             logfile.close();
+
+            std::string results = "";
+            results.append(to_string(total));
+            results.append(",");
+            results.append(to_string(success));
+            results.append(",");
+            results.append(to_string(failed));
+            char *buf = communicator.createBuffer();
+            communicator.put(buf, results);
+            communicator.send(buf, in_fd);
+
             return 0;
         }
         else if (comms[0] == "/diseaseFrequency") //8. /diseaseFrequency virusName date1 date2 [country]
@@ -482,7 +493,7 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
                 failed++;
             }
         }
-        else if (comms[0] == "/topk-AgeRanges") // /topk-AgeRanges k country disease [d1 d2]
+        else if (comms[0] == "/topk-AgeRanges") // /topk-AgeRanges k country disease d1 d2
         {
             //thelei polles alages akoma se polla epipeda domwn
             while (pch != NULL)
@@ -491,7 +502,7 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
                 counter++;
                 pch = strtok(NULL, delim);
             }
-            if ((counter > 6) || counter < 4)
+            if (counter != 6)
             {
                 //fprintf(stderr, "error\n");
                 char *buf = communicator.createBuffer();
@@ -515,49 +526,38 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
             } //age ranges: 0-20, 21-40, 41-60, 60+
             else
             {
-                if (counter == 6)
+                std::string wannabedate1 = comms[4];
+                std::string wannabedate2 = comms[5];
+                if ((date_format(wannabedate1) == false) || (date_format(wannabedate2) == false))
                 {
-                    std::string wannabedate1 = comms[4];
-                    std::string wannabedate2 = comms[5];
-                    if ((date_format(wannabedate1) == false) || (date_format(wannabedate2) == false))
-                    {
-                        //std::cerr << "error\n";
-                        char *buf = communicator.createBuffer();
-                        communicator.put(buf, "ERR");
-                        communicator.send(buf, in_fd);
-                        communicator.destroyBuffer(buf);
-                        failed++;
-                        //break;
-                    }
-                    //else dates are ok
-                    date d1(wannabedate1);
-                    date d2(wannabedate2);
-                    if (isLater(d1, d2) == -1) //an d1>d2, epistrefei -1
-                    {
-                        char *buf = communicator.createBuffer();
-                        communicator.put(buf, "ERR");
-                        communicator.send(buf, in_fd);
-                        communicator.destroyBuffer(buf);
-                        failed++;
-                        //std::cerr << "error\n";
-                        //break;
-                    } //else dates are ok ok ara kaloume
-                    //return ta age ranges
-                    std::string apantisi = b->top_k_age_ranges(k, d1, d2, countryName, diseaseName);
+                    //std::cerr << "error\n";
                     char *buf = communicator.createBuffer();
-                    communicator.put(buf, apantisi.c_str());
+                    communicator.put(buf, "ERR");
                     communicator.send(buf, in_fd);
                     communicator.destroyBuffer(buf);
-                    success++;
+                    failed++;
+                    //break;
                 }
-                else
+                //else dates are ok
+                date d1(wannabedate1);
+                date d2(wannabedate2);
+                if (isLater(d1, d2) == -1) //an d1>d2, epistrefei -1
                 {
                     char *buf = communicator.createBuffer();
                     communicator.put(buf, "ERR");
                     communicator.send(buf, in_fd);
                     communicator.destroyBuffer(buf);
                     failed++;
-                }
+                    //std::cerr << "error\n";
+                    //break;
+                } //else dates are ok ok ara kaloume
+                //return ta age ranges
+                std::string apantisi = b->top_k_age_ranges(k, d1, d2, diseaseName);
+                char *buf = communicator.createBuffer();
+                communicator.put(buf, apantisi.c_str());
+                communicator.send(buf, in_fd);
+                communicator.destroyBuffer(buf);
+                success++;
             }
         }
         else if (comms[0] == "/searchPatientRecord")
@@ -813,6 +813,31 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
             failed++;
         }
     } //end while(1)
+
+
+    //shutdown 
+    ofstream logfile;
+    std::string onomaarxeiou = "log_file.";
+    onomaarxeiou += to_string(child_pid);
+    logfile.open(onomaarxeiou);
+    for (int i = 0; i < countries.size; i++) //grafw poies einai oi xwres m
+    {
+        logfile << countries.items[i] << "\n";
+    }
+    logfile << "TOTAL: " << total << "\n";     //posa erwthmata mou irthan
+    logfile << "SUCCESS: " << success << "\n"; //posa success
+    logfile << "FAIL: " << failed << "\n";     //posa fail
+    logfile.close();
+
+    std::string results = "";
+    results.append(to_string(total));
+    results.append(",");
+    results.append(to_string(success));
+    results.append(",");
+    results.append(to_string(failed));
+    char *buf = communicator.createBuffer();
+    communicator.put(buf, results);
+    communicator.send(buf, in_fd);
 
     return 0;
 }
