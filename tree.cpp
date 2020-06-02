@@ -155,13 +155,13 @@ long int tree::statsExit(tree_node *tr, date d1, date d2) //idia me stats alla v
     {
         return metritis;
     }
-    metritis += stats(tr->left, d1, d2);
-    //if (isBetween(*(tr->d), d1, d2) == true)
-    if (isBetween(*(tr->rec->get_exitDatePtr()), d1, d2) == true)
+    metritis += statsExit(tr->left, d1, d2);
+    if (isBetween(tr->rec->get_exitDate(), d1, d2) == true)
+    //if (isBetween(*(tr->rec->get_exitDatePtr()), d1, d2) == true)
     {
         metritis++;
     }
-    metritis += stats(tr->right, d1, d2);
+    metritis += statsExit(tr->right, d1, d2);
     return metritis;
 }
 long int tree::statsExitC(tree_node *tr, date d1, date d2, std::string countryName) //idia me exit alla & vasei country
@@ -171,15 +171,16 @@ long int tree::statsExitC(tree_node *tr, date d1, date d2, std::string countryNa
     {
         return metritis;
     }
-    metritis += statsCx(tr->left, d1, d2, countryName);
-    if (isBetween(*(tr->rec->get_exitDatePtr()), d1, d2) == true)
+    metritis += statsExitC(tr->left, d1, d2, countryName);
+    //if (isBetween(*(tr->rec->get_exitDatePtr()), d1, d2) == true)
+    if (isBetween(tr->rec->get_exitDate(), d1, d2) == true)
     {
         if (tr->rec->get_country() == countryName)
         {
             metritis++;
         }
     }
-    metritis += statsCx(tr->right, d1, d2, countryName);
+    metritis += statsExitC(tr->right, d1, d2, countryName);
     return metritis;
 }
 /*

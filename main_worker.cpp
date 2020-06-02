@@ -722,37 +722,63 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
             std::string wannabedate2 = comms[3];
             if ((date_format(wannabedate1) == false) || (date_format(wannabedate2) == false))
             {
-                std::cerr << "error\n";
+                char *buf = communicator.createBuffer();
+                communicator.put(buf, "ERR");
+                communicator.send(buf, in_fd);
+                communicator.destroyBuffer(buf);
                 failed++;
-                break;
+                //break;
             }
             //else
             date d1(wannabedate1);
             date d2(wannabedate2);
             if (isLater(d1, d2) == -1) //an d1>d2, epistrefei -1
             {
-                std::cerr << "error\n";
+                char *buf = communicator.createBuffer();
+                communicator.put(buf, "ERR");
+                communicator.send(buf, in_fd);
+                communicator.destroyBuffer(buf);
                 failed++;
-                break;
+                //break;
             }
             //else ok
             if ((counter > 5) || (counter < 4))
             {
-                exit(-1);
                 failed++;
+                char *buf = communicator.createBuffer();
+                communicator.put(buf, "ERR");
+                communicator.send(buf, in_fd);
+                communicator.destroyBuffer(buf);
             }
             else if (counter == 4) //oxi basei country
             {
                 block *blockPtr = diseaseHT.search(dis);
                 if (blockPtr == NULL)
                 {
-                    std::cout << dis << " 0\n";
+                    char *buf = communicator.createBuffer();
+                    communicator.put(buf, "IDK");
+                    communicator.send(buf, in_fd);
+                    communicator.destroyBuffer(buf);
                     success++;
-                    //std::cout << "0\n"; //den eixame kanena krousma
                 }
                 else
                 {
-                    fprintf(stdout, "%ld\n", blockPtr->statsExit(d1, d2));
+                    //gia kathe xwra m
+                    std::string reply = "";
+                    for (int me = 0; me < countries.size; me++)
+                    {
+                        std::string onoma_xwras;
+                        onoma_xwras = countries.items[me];
+                        long int apantisi = blockPtr->statsExitC(d1, d2, onoma_xwras);
+                        reply.append(onoma_xwras);
+                        reply.append(" ");
+                        reply.append(to_string(apantisi));
+                        reply.append("\n");
+                    }
+                    char *buf = communicator.createBuffer();
+                    communicator.put(buf, reply.c_str());
+                    communicator.send(buf, in_fd);
+                    communicator.destroyBuffer(buf);
                     success++;
                 }
             }
@@ -762,12 +788,20 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
                 block *blockPtr = diseaseHT.search(dis);
                 if (blockPtr == NULL)
                 {
-                    std::cout << dis << " 0\n";
-                    success++;
+                    char *buf = communicator.createBuffer();
+                    communicator.put(buf, "IDK");
+                    communicator.send(buf, in_fd);
+                    communicator.destroyBuffer(buf);
+                    failed++;
                 }
                 else
                 {
-                    fprintf(stdout, "%ld\n", blockPtr->statsExitC(d1, d2, countryName));
+                    long int apantisi = blockPtr->statsExitC(d1, d2, countryName);
+                    std::string reply = to_string(apantisi);
+                    char *buf = communicator.createBuffer();
+                    communicator.put(buf, reply.c_str());
+                    communicator.send(buf, in_fd);
+                    communicator.destroyBuffer(buf);
                     success++;
                 }
             }
