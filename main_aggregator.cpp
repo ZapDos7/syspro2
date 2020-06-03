@@ -206,6 +206,29 @@ int main(int argc, char const *argv[])
     }
 */
 
+    ofstream summ_file;
+    std::string onomaarxeiousum = "sum_file.txt";
+    summ_file.open(onomaarxeiousum);
+
+    //lipsi summaries
+    for (int i = 0; i < w; i++)
+    {
+        while (true)
+        {
+            char *buf = communicator.createBuffer();
+            communicator.recv(buf, pid_in_out.items[i].in);
+            //fprintf(stderr, "Elava apo to worker %d to minima: '%ld' \n", i, sizeof(buf));
+            if (string(buf) == "BYE")
+            { //elava to eidiko mhnuma oti that's a nono
+                break;
+            }
+            //and en einai BYE valto mesa
+            summ_file << buf << "\n";
+            communicator.destroyBuffer(buf);
+        }
+    }
+    summ_file.close();
+    fprintf(stderr, "Gonios ready!\n");
     long int total = 0;
     long int success = 0;
     long int failed = 0;
@@ -216,6 +239,9 @@ int main(int argc, char const *argv[])
     sigfillset(&(act.sa_mask));
     sigaction(SIGINT, &act, NULL);
     sigaction(SIGQUIT, &act, NULL);
+
+    //fprintf(stderr, "Stelnw sto paidi %d ena SIGINT na gelasoume\n", pid_in_out.items[0].pid);
+    //kill(pid_in_out.items[0].pid,SIGINT);
 
     //commands
     std::string com; //command
@@ -833,7 +859,6 @@ int main(int argc, char const *argv[])
     {
         kill(pid_in_out.items[i].pid, SIGKILL);
     }
-    
 
     //kleinw pipes workers' ws AGGR
     for (int j = 0; j < countries.size; j++)

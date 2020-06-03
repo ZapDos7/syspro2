@@ -14,7 +14,8 @@ Contents:
 - date_format, quicksort files
 - Pair.h/.cpp (class that combines info about: country, p_id, in and out fds)
 - Triplette.h/.cpp (class that connects a process with its in and out fds)
-- Array.h which is a generic class of arrays used in PairArray, PidArray, TripleArray and StringArray (self explanatory).
+- Summ.h/.cpp (class that keeps notes on the number of cases per disease per date, used in summaries)
+- Array.h which is a generic class of arrays used in PairArray, PidArray, TripleArray, SummArray and StringArray (self explanatory).
 
 Use:
 - While in the project folder, run "$make" to create the .o files and the executable

@@ -22,6 +22,8 @@ System Programming Project #2, Spring 2020
 #include "Communication.h"
 #include "StringArray.h"
 #include "main_worker.h"
+//#include "Summ.h"
+#include "SummArray.h"
 
 bool refresh_scheduled = false;
 
@@ -30,6 +32,14 @@ void catchinterrupt2(int signo)
     // refresh stin main gia na exw prosvasi se mi global vars
     refresh_scheduled = true;
 }
+
+bool shutdown_scheduled = false;
+
+void catchinterrupt3(int signo)
+{
+    shutdown_scheduled = true;
+}
+
 int main_worker(char *in_dir, int b, string name_out, string name_in)
 {
     int child_pid = getpid();
@@ -65,6 +75,9 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
 
     for (int posa = 0; posa < countries.size; posa++)
     {
+
+        std::string summary = "";
+
         int posa_arxeia = 0; //posa date arxeia exei mesa to folder gia mia xwra
         DIR *dir;
         struct dirent *entry; //xwra
@@ -134,33 +147,16 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
         }
         closedir(dir);
 
-        //fprintf(stderr, "2o closedir apo %d\n", child_pid);
-        //fprintf(stderr, "i am child %d and i am sorting now\n", child_pid);
-        //sort time
-        // fprintf(stderr, "\n%d pro quick\t", child_pid);
-
-        // for (int lala = 0; lala < posa_date_arxeia; lala++) {
-        //     fprintf(stderr, "%s\t", date_file_names[lala].c_str());
-        // }
-        // fprintf(stderr, "\n");
-
-        // cout << "================================================================= \n";
         quickSort(date_file_names, 0, posa_date_arxeia - 1);
 
-        // cout << "----------------------------------------------------------------- \n";
-
-        // fprintf(stderr, "\n%d\t", child_pid);
-        // for (int lala = 0; lala < posa_date_arxeia; lala++) {
-        //     fprintf(stderr, "%s\t", date_file_names[lala].c_str());
-        // }
-        // fprintf(stderr, "\n");
-
-        // fprintf(stderr, "i am child %d and i have sorted ### \n", child_pid);
-        //and now we enter there and read the data
-        //fprintf(stderr, "eimai o %d :\texw %d kai %d\n", child_pid, posa_date_arxeia, posa_arxeia);
-        //dir = opendir(monopati.c_str());
         for (int akak = 0; akak < posa_date_arxeia; akak++)
         {
+            summary.append(date_file_names[akak]);
+            summary.append("\n"); //date
+            summary.append(countries.items[posa]);
+            summary.append("\n"); //country
+            //fprintf(stderr, "\t%s\n", summary.c_str());
+            SummArray summaries(1000);
             std::string path = monopati;
             path.append("/");
             path.append(date_file_names[akak]);
@@ -220,6 +216,7 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
                         }
                         else
                         {
+                            summaries.insert_rec(elegxos);
                             //fprintf(stderr, "o %d evale to %s\n", child_pid, elegxos->get_id().c_str());
                             diseaseHT.ainsert(elegxos, false);
                             countryHT.ainsert(elegxos, true);
@@ -272,19 +269,37 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
             dataset.close();
             //fprintf(stderr, "worker %d going to %d apo %d\n", child_pid, akak, posa_date_arxeia);
             //send summary:
-            //date_file_names[akak] //imerominia
-            // //xwra
-            // //disease1
-            // 0-20: X cases
-            // 20-40: Y cases
-            //...
-            //disease 2
-            //....
-            //telos
+            for (int f = 0; f < summaries.size; f++)
+            {
+                summary.append(summaries.items[f].diseaseName); //onoma astheneias
+                summary.append("\n");
+                summary.append("Age range 0-20 years: ");
+                summary.append(to_string(summaries.items[f].metr1));
+                summary.append(" cases\n");
+                summary.append("Age range 21-40 years: ");
+                summary.append(to_string(summaries.items[f].metr2));
+                summary.append(" cases\n");
+                summary.append("Age range 41-60 years: ");
+                summary.append(to_string(summaries.items[f].metr3));
+                summary.append(" cases\n");
+                summary.append("Age range 60+ years: ");
+                summary.append(to_string(summaries.items[f].metr4));
+                summary.append(" cases\n");
+                summary.append("\n");
+            }
+            //fprintf(stderr, "\t%s\n", summary.c_str());
         }
+        char *buf = communicator.createBuffer();
+        communicator.put(buf, summary);
+        communicator.send(buf, in_fd);
+        communicator.destroyBuffer(buf);
         //closedir(dir);
         //fprintf(stderr, "telos apo %d gia xwra= %s\n", child_pid, countries.items[posa].c_str());
     }
+    char *bufsum = communicator.createBuffer();
+    communicator.put(bufsum, "BYE");
+    communicator.send(bufsum, in_fd);
+    communicator.destroyBuffer(bufsum);
     fprintf(stderr, "Worker %d ready\n", child_pid);
     //return 0;
     /*
@@ -312,6 +327,9 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
     sigfillset(&(act.sa_mask));
     sigaction(SIGUSR1, &act, NULL);
 
+    //static struct sigaction act2;
+    //act2.sa_handler = catchinterrupt3;
+
     while (true)
     {
         char *buf = communicator.createBuffer();
@@ -322,6 +340,36 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
             // refresh - WIP
             continue;
         }
+
+        if (shutdown_scheduled == true)
+        {
+            shutdown_scheduled = false;
+            ofstream logfile;
+            std::string onomaarxeiou = "log_file.";
+            onomaarxeiou += to_string(child_pid);
+            logfile.open(onomaarxeiou);
+            for (int i = 0; i < countries.size; i++) //grafw poies einai oi xwres m
+            {
+                logfile << countries.items[i] << "\n";
+            }
+            logfile << "TOTAL: " << total << "\n";     //posa erwthmata mou irthan
+            logfile << "SUCCESS: " << success << "\n"; //posa success
+            logfile << "FAIL: " << failed << "\n";     //posa fail
+            logfile.close();
+
+            /*std::string results = "";
+            results.append(to_string(total));
+            results.append(",");
+            results.append(to_string(success));
+            results.append(",");
+            results.append(to_string(failed));
+            char *buf = communicator.createBuffer();
+            communicator.put(buf, results);
+            communicator.send(buf, in_fd);
+            */
+            return 0;
+        }
+
         std::string com(buf); //com is the command as std::string
 
         communicator.destroyBuffer(buf);
@@ -814,8 +862,7 @@ int main_worker(char *in_dir, int b, string name_out, string name_in)
         }
     } //end while(1)
 
-
-    //shutdown 
+    //shutdown
     ofstream logfile;
     std::string onomaarxeiou = "log_file.";
     onomaarxeiou += to_string(child_pid);
