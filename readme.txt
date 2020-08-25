@@ -38,3 +38,5 @@ Sources:
 - class' notes
 - My previous project for this course.
 - functions "readall" and "writeall" from the book "Unix Programming" by M.J. Rochkind used in the Communication class
+
+Final Grade: 47%
